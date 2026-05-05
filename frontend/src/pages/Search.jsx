@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Search as SearchIcon, UserPlus, Filter, Sparkles, Users } from "lucide-react";
 import api from "../api/client";
 import { useDarkClasses } from "../hooks/useDarkClasses";
+import { toast } from "../components/Toast";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -36,9 +37,9 @@ export default function Search() {
   const sendConnection = async (userId) => {
     try {
       await api.post(`/connections/${userId}`);
-      alert("Baglanti isteyi gonderildi!");
+      toast.success("Bağlantı istəyi göndərildi!");
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta bash verdi");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 

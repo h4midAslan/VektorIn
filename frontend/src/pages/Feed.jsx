@@ -5,6 +5,7 @@ import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
 import { useDarkClasses } from "../hooks/useDarkClasses";
+import { toast } from "../components/Toast";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
@@ -61,7 +62,7 @@ export default function Feed() {
         setVideoUrl("");
       }
     } catch (err) {
-      alert(err.response?.data?.detail || "Fayl yüklənmədi");
+      toast.error(err.response?.data?.detail || "Fayl yüklənmədi");
     }
     setUploading(false);
     e.target.value = "";
@@ -84,7 +85,7 @@ export default function Feed() {
       setShowDislikes(true);
       loadFeed();
     } catch (err) {
-      alert(err.response?.data?.detail || "Post yaradılmadı");
+      toast.error(err.response?.data?.detail || "Post yaradılmadı");
     }
     setPosting(false);
   };
@@ -122,7 +123,7 @@ export default function Feed() {
   const handleDelete = async (postId) => {
     if (!confirm("Bu postu silmək istədiyinə əminsən?")) return;
     setPosts(prev => prev.filter(p => p.id !== postId));
-    try { await api.delete(`/posts/${postId}`); } catch (err) { loadFeed(); alert(err.response?.data?.detail || "Post silinmədi"); }
+    try { await api.delete(`/posts/${postId}`); } catch (err) { loadFeed(); toast.error(err.response?.data?.detail || "Post silinmədi"); }
   };
 
   const toggleComments = async (postId) => {
@@ -153,8 +154,8 @@ export default function Feed() {
       await api.post(`/posts/${reportPostId}/report`, { reason: reportReason.trim() || null });
       setReportPostId(null);
       setReportReason("");
-      alert("Şikayət göndərildi. Admin yoxlayacaq.");
-    } catch (err) { alert(err.response?.data?.detail || "Şikayət göndərilmədi"); }
+      toast.success("Şikayət göndərildi. Admin yoxlayacaq.");
+    } catch (err) { toast.error(err.response?.data?.detail || "Şikayət göndərilmədi"); }
     setReporting(false);
   };
 

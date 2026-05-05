@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import api from "../api/client";
 import { formatBakuDate, formatBakuTime, formatBakuHM } from "../utils/time";
+import { toast } from "../components/Toast";
 
 export default function Admin() {
   const [tab, setTab] = useState("dashboard");
@@ -72,7 +73,7 @@ export default function Admin() {
       await api.post(`/admin/reports/dismiss/${postId}`);
       loadReports();
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 
@@ -83,7 +84,7 @@ export default function Admin() {
       loadReports();
       loadStats();
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 
@@ -105,7 +106,7 @@ export default function Admin() {
       loadUsers();
       loadStats();
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 
@@ -114,7 +115,7 @@ export default function Admin() {
       await api.patch(`/admin/users/${userId}/toggle-admin`);
       loadUsers();
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 
@@ -126,7 +127,7 @@ export default function Admin() {
       loadStats();
       setSelectedUser(null);
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 
@@ -135,7 +136,7 @@ export default function Admin() {
       await api.patch(`/admin/posts/${postId}/pin`);
       loadPosts();
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 
@@ -146,7 +147,7 @@ export default function Admin() {
       loadPosts();
       loadStats();
     } catch (err) {
-      alert(err.response?.data?.detail || "Xeta");
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
     }
   };
 

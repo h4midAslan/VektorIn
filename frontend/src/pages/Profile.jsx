@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { toast } from "../components/Toast";
 import { Edit3, Save, X, BookOpen, Award, GraduationCap, Sparkles, Plus, Trash2, ExternalLink, Camera, FolderGit2, Code2, Heart, ThumbsDown, MessageCircle, FileText, Send, Mail, Inbox } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
@@ -103,7 +104,7 @@ export default function Profile() {
       setMsgSent(templates[index]);
       setTimeout(() => { setMsgSent(""); setShowQuickMsg(false); }, 1500);
     } catch (err) {
-      alert(err.response?.data?.detail || "Mesaj göndərilmədi");
+      toast.error(err.response?.data?.detail || "Mesaj göndərilmədi");
     }
     setSendingMsg(false);
   };

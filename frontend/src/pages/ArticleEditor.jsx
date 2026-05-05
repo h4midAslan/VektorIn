@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "../components/Toast";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -80,7 +81,7 @@ export default function ArticleEditor() {
       formData.append("file", file);
       const res = await api.post("/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
       setCoverImage(res.data.url);
-    } catch (err) { alert("Şəkil yüklənmədi"); }
+    } catch (err) { toast.error("Şəkil yüklənmədi"); }
     setUploading(false);
   };
 
@@ -96,7 +97,7 @@ export default function ArticleEditor() {
         const res = await api.post("/articles", data);
         navigate(`/article/${res.data.id}`);
       }
-    } catch (err) { alert(err.response?.data?.detail || "Xəta baş verdi"); }
+    } catch (err) { toast.error(err.response?.data?.detail || "Xəta baş verdi"); }
     setSaving(false);
   };
 
