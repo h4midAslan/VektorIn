@@ -42,6 +42,6 @@ app.include_router(articles.router)
 app.include_router(notifications.router)
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {"message": "Hash API işləyir"}
