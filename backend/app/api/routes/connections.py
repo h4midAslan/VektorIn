@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.services.database import get_db
 from app.services.auth import get_current_user
+from app.services.notifier import create_notification
 from app.models.user import User
 from app.models.connection import Connection
 
@@ -27,6 +28,7 @@ def send_request(user_id: int, db: Session = Depends(get_db), current_user: User
     conn = Connection(sender_id=current_user.id, receiver_id=user_id)
     db.add(conn)
     db.commit()
+    create_notification(db, user_id=user_id, from_user_id=current_user.id, type="connection_request")
     return {"message": "Bağlantı istəyi göndərildi"}
 
 
@@ -38,6 +40,7 @@ def accept_request(connection_id: int, db: Session = Depends(get_db), current_us
 
     conn.status = "accepted"
     db.commit()
+    create_notification(db, user_id=conn.sender_id, from_user_id=current_user.id, type="connection_accepted")
     return {"message": "Bağlantı qəbul edildi"}
 
 

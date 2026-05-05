@@ -15,6 +15,7 @@ from app.models.project import Project
 from app.models.event import Event
 from app.models.activity_log import ActivityLog
 from app.models.article import Article, ArticleLike, ArticleComment
+from app.models.notification import Notification
 from sqlalchemy import text
 Base.metadata.create_all(bind=engine)
 with engine.begin() as conn:

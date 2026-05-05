@@ -4,6 +4,7 @@ from sqlalchemy import func as sa_func
 from pydantic import BaseModel
 from app.services.database import get_db
 from app.services.auth import get_current_user
+from app.services.notifier import create_notification
 from app.models.user import User
 from app.models.post import Post, PostLike, PostDislike, Comment, PostReport
 
@@ -118,6 +119,7 @@ def toggle_like(post_id: int, db: Session = Depends(get_db), current_user: User 
     like = PostLike(post_id=post_id, user_id=current_user.id)
     db.add(like)
     db.commit()
+    create_notification(db, user_id=post.author_id, from_user_id=current_user.id, type="post_liked", post_id=post_id)
     return {"message": "Like edildi"}
 
 
@@ -187,6 +189,7 @@ def add_comment(post_id: int, data: CommentCreate, db: Session = Depends(get_db)
     comment = Comment(post_id=post_id, user_id=current_user.id, content=data.content)
     db.add(comment)
     db.commit()
+    create_notification(db, user_id=post.author_id, from_user_id=current_user.id, type="post_commented", post_id=post_id)
     return {"message": "Şərh əlavə edildi"}
 
 

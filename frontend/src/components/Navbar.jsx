@@ -1,29 +1,117 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, Search, Users, User, LogOut, Menu, X, Shield, Settings } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Home, Search, Users, User, LogOut, Menu, X, Shield, Settings, Bell, Heart, MessageCircle, UserPlus, UserCheck } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import api from "../api/client";
 import { useDarkMode } from "../hooks/useTheme";
+
+const NOTIF_LABELS = {
+  connection_request:  { icon: UserPlus,    text: "sənə bağlantı istəyi göndərdi",  color: "text-blue-500" },
+  connection_accepted: { icon: UserCheck,   text: "bağlantı istəyini qəbul etdi",   color: "text-green-500" },
+  post_liked:          { icon: Heart,       text: "postunu bəyəndi",                color: "text-red-500" },
+  post_commented:      { icon: MessageCircle, text: "postuna şərh yazdı",           color: "text-indigo-500" },
+};
+
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  if (diff < 60) return "indicə";
+  if (diff < 3600) return `${Math.floor(diff / 60)} dəq`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} saat`;
+  return `${Math.floor(diff / 86400)} gün`;
+}
+
+function NotificationDropdown({ dark, onClose }) {
+  const [notifs, setNotifs] = useState([]);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    api.get("/notifications").then(res => setNotifs(res.data)).catch(() => {});
+    api.put("/notifications/read-all").catch(() => {});
+
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`absolute right-0 top-12 w-80 rounded-2xl shadow-2xl border z-50 overflow-hidden
+        ${dark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"}`}
+    >
+      <div className={`px-4 py-3 border-b ${dark ? "border-gray-700" : "border-gray-100"} flex items-center justify-between`}>
+        <span className={`font-bold text-sm ${dark ? "text-white" : "text-gray-900"}`}>Bildirişlər</span>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+      </div>
+
+      <div className="max-h-96 overflow-y-auto">
+        {notifs.length === 0 ? (
+          <div className="py-10 text-center">
+            <Bell size={28} className="mx-auto text-gray-300 mb-2" />
+            <p className={`text-sm ${dark ? "text-gray-500" : "text-gray-400"}`}>Bildiriş yoxdur</p>
+          </div>
+        ) : notifs.map(n => {
+          const cfg = NOTIF_LABELS[n.type] || {};
+          const Icon = cfg.icon || Bell;
+          return (
+            <div
+              key={n.id}
+              className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 transition
+                ${dark ? "border-gray-800 hover:bg-gray-800" : "border-gray-50 hover:bg-gray-50"}
+                ${!n.is_read ? (dark ? "bg-blue-500/5" : "bg-blue-50/40") : ""}`}
+            >
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${dark ? "bg-gray-800" : "bg-gray-100"}`}>
+                <Icon size={18} className={cfg.color || "text-gray-400"} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm leading-snug ${dark ? "text-gray-200" : "text-gray-800"}`}>
+                  <span className="font-semibold">{n.from_user_name}</span>{" "}
+                  {cfg.text}
+                </p>
+                <p className={`text-xs mt-0.5 ${dark ? "text-gray-500" : "text-gray-400"}`}>{timeAgo(n.created_at)}</p>
+              </div>
+              {!n.is_read && <span className="w-2 h-2 bg-blue-500 rounded-full shrink-0 mt-1" />}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifs, setShowNotifs] = useState(false);
   const dark = useDarkMode();
 
   useEffect(() => {
     api.get("/users/me").then(res => setCurrentUser(res.data)).catch(() => {});
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchUnread = () => {
+    api.get("/notifications/unread-count").then(res => setUnreadCount(res.data.count)).catch(() => {});
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
+  const handleBellClick = () => {
+    setShowNotifs(v => !v);
+    setUnreadCount(0);
+  };
+
   const links = [
     { path: "/feed", icon: Home, label: "Feed" },
     { path: "/search", icon: Search, label: "Axtar" },
-    { path: "/connections", icon: Users, label: "Baglantilar" },
+    { path: "/connections", icon: Users, label: "Bağlantılar" },
     { path: "/profile", icon: User, label: "Profil" },
     { path: "/settings", icon: Settings, label: "Parametrlər" },
     ...(currentUser?.is_admin ? [{ path: "/admin", icon: Shield, label: "Admin" }] : []),
@@ -49,13 +137,11 @@ export default function Navbar() {
                   isActive
                     ? isAdmin
                       ? "bg-gradient-to-r from-red-50 to-rose-50 text-red-600 shadow-sm"
-                      : dark
-                      ? "bg-blue-500/20 text-blue-400 shadow-sm"
+                      : dark ? "bg-blue-500/20 text-blue-400 shadow-sm"
                       : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 shadow-sm"
                     : isAdmin
                     ? "text-red-400 hover:bg-red-50 hover:text-red-500"
-                    : dark
-                    ? "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                    : dark ? "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
                 }`}
               >
@@ -69,23 +155,59 @@ export default function Navbar() {
               </Link>
             );
           })}
+
           <div className={`w-px h-8 ${dark ? "bg-gray-700" : "bg-gray-200"} mx-2`} />
+
+          {/* Bell */}
+          <div className="relative">
+            <button
+              onClick={handleBellClick}
+              className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                dark ? "text-gray-400 hover:bg-gray-800 hover:text-gray-200" : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+              }`}
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+            {showNotifs && <NotificationDropdown dark={dark} onClose={() => setShowNotifs(false)} />}
+          </div>
+
           <button
             onClick={logout}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${dark ? "text-gray-400 hover:bg-red-500/10 hover:text-red-400" : "text-gray-400 hover:bg-red-50 hover:text-red-500"} transition-all duration-200`}
           >
             <LogOut size={18} />
-            <span>Cixis</span>
+            <span>Çıxış</span>
           </button>
         </div>
 
         {/* Mobile hamburger */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className={`md:hidden p-2 rounded-xl ${dark ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"} transition`}
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <div className="relative">
+            <button
+              onClick={handleBellClick}
+              className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition ${dark ? "text-gray-400" : "text-gray-500"}`}
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+            {showNotifs && <NotificationDropdown dark={dark} onClose={() => setShowNotifs(false)} />}
+          </div>
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className={`p-2 rounded-xl ${dark ? "text-gray-400 hover:bg-gray-800" : "text-gray-500 hover:bg-gray-100"} transition`}
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -101,15 +223,11 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? isAdmin
-                      ? "bg-gradient-to-r from-red-50 to-rose-50 text-red-600"
-                      : dark
-                      ? "bg-blue-500/20 text-blue-400"
+                    ? isAdmin ? "bg-gradient-to-r from-red-50 to-rose-50 text-red-600"
+                      : dark ? "bg-blue-500/20 text-blue-400"
                       : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600"
-                    : isAdmin
-                    ? "text-red-400 hover:bg-red-50"
-                    : dark
-                    ? "text-gray-400 hover:bg-gray-800"
+                    : isAdmin ? "text-red-400 hover:bg-red-50"
+                    : dark ? "text-gray-400 hover:bg-gray-800"
                     : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
@@ -123,7 +241,7 @@ export default function Navbar() {
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition w-full"
           >
             <LogOut size={20} />
-            <span>Cixis</span>
+            <span>Çıxış</span>
           </button>
         </div>
       )}
