@@ -1,5 +1,8 @@
 import httpx
+import logging
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def send_verification_code(to_email: str, code: str) -> bool:
@@ -25,6 +28,10 @@ def send_verification_code(to_email: str, code: str) -> bool:
             },
             timeout=10,
         )
-        return res.status_code == 200
-    except Exception:
+        if res.status_code in (200, 201):
+            return True
+        logger.warning("Resend failed for %s: %s %s", to_email, res.status_code, res.text)
+        return False
+    except Exception as e:
+        logger.error("Email send exception for %s: %s", to_email, e)
         return False

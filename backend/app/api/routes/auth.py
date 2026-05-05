@@ -1,5 +1,6 @@
 import secrets
 import random
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
@@ -10,6 +11,8 @@ from app.services.auth import hash_password, verify_password, create_access_toke
 from app.services.activity_logger import log_activity
 from app.services.email import send_verification_code
 from app.models.user import User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
@@ -108,7 +111,13 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
         existing.verification_token = code
         existing.password_hash = hash_password(data.password)
         db.commit()
-        send_verification_code(existing.email, code)
+        sent = send_verification_code(existing.email, code)
+        logger.info("VERIFY_CODE email=%s code=%s sent=%s", existing.email, code, sent)
+        if not sent:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Email göndərilə bilmədi. Bir az sonra yenidən cəhd edin."
+            )
         return {"message": "Kod emailinizə göndərildi.", "email": existing.email}
 
     code = f"{random.randint(100000, 999999)}"
@@ -127,7 +136,13 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
     db.refresh(user)
 
     log_activity(db, action="register", user_id=user.id, email=user.email, request=request)
-    send_verification_code(user.email, code)
+    sent = send_verification_code(user.email, code)
+    logger.info("VERIFY_CODE email=%s code=%s sent=%s", user.email, code, sent)
+    if not sent:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Email göndərilə bilmədi. Bir az sonra yenidən cəhd edin."
+        )
 
     return {"message": "Kod emailinizə göndərildi.", "email": user.email}
 
