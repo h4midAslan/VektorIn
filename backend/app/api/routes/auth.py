@@ -1,5 +1,4 @@
 import secrets
-import random
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
@@ -107,7 +106,7 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Bu email artıq qeydiyyatdan keçib"
             )
-        code = f"{random.randint(100000, 999999)}"
+        code = f"{secrets.randbelow(900000) + 100000}"
         existing.verification_token = code
         existing.password_hash = hash_password(data.password)
         db.commit()
@@ -120,7 +119,7 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
             )
         return {"message": "Kod emailinizə göndərildi.", "email": existing.email}
 
-    code = f"{random.randint(100000, 999999)}"
+    code = f"{secrets.randbelow(900000) + 100000}"
     user = User(
         email=data.email,
         password_hash=hash_password(data.password),
@@ -180,6 +179,7 @@ class VerifyCodeRequest(BaseModel):
 
 
 @router.post("/verify-code")
+@limiter.limit("5/minute")
 def verify_code(request: Request, data: VerifyCodeRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user or user.is_verified:

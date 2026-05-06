@@ -1,12 +1,15 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from app.services.database import get_db
 from app.services.auth import get_current_user, verify_password, hash_password
 from app.models.user import User
 
 router = APIRouter(prefix="/api/users", tags=["users"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 class UserResponse(BaseModel):
@@ -81,7 +84,8 @@ class ChangePasswordRequest(BaseModel):
 
 
 @router.put("/me/password")
-def change_password(data: ChangePasswordRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@limiter.limit("5/minute")
+def change_password(request: Request, data: ChangePasswordRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not verify_password(data.current_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="Cari şifrə yanlışdır")
     if len(data.new_password) < 6:
