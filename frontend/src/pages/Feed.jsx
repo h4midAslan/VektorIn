@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, Sparkles } from "lucide-react";
+import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
@@ -25,13 +25,38 @@ export default function Feed() {
   const [commentText, setCommentText] = useState({});
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
+  const [connectedIds, setConnectedIds] = useState(new Set());
+  const [pendingIds, setPendingIds] = useState(new Set());
   const d = useDarkClasses();
   const { t } = useLang();
 
   useEffect(() => {
     loadFeed().finally(() => setLoading(false));
     loadUser();
+    loadConnections();
   }, []);
+
+  const loadConnections = async () => {
+    try {
+      const [myRes, pendRes] = await Promise.all([
+        api.get("/connections/my"),
+        api.get("/connections/sent"),
+      ]);
+      setConnectedIds(new Set(myRes.data.map(c => c.user_id)));
+      setPendingIds(new Set(pendRes.data.map(c => c.receiver_id)));
+    } catch {}
+  };
+
+  const handleConnect = async (userId) => {
+    setPendingIds(prev => new Set([...prev, userId]));
+    try {
+      await api.post(`/connections/${userId}`);
+      toast.success("Bağlantı istəyi göndərildi!");
+    } catch (err) {
+      setPendingIds(prev => { const s = new Set(prev); s.delete(userId); return s; });
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
+    }
+  };
 
   const loadUser = async () => {
     try {
@@ -282,6 +307,20 @@ export default function Feed() {
                   <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 text-xs px-3.5 py-1.5 rounded-full font-semibold border border-amber-100">
                     <Pin size={12} /> {t("feed_pinned")}
                   </span>
+                )}
+                {user && post.author_id !== user.id && !connectedIds.has(post.author_id) && (
+                  <button
+                    onClick={() => handleConnect(post.author_id)}
+                    disabled={pendingIds.has(post.author_id)}
+                    title={pendingIds.has(post.author_id) ? "İstək göndərildi" : "Bağlantı istəyi göndər"}
+                    className={`p-1.5 rounded-lg transition-all duration-200 ${
+                      pendingIds.has(post.author_id)
+                        ? d.dark ? "text-green-400 bg-green-500/10" : "text-green-600 bg-green-50"
+                        : d.dark ? "text-gray-500 hover:text-blue-400 hover:bg-blue-500/10" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    {pendingIds.has(post.author_id) ? <UserCheck size={16} /> : <UserPlus size={16} />}
+                  </button>
                 )}
                 {user && post.author_id === user.id && (
                   <button onClick={() => handleDelete(post.id)} className={`${d.textFaint} hover:text-red-500 transition p-1`} title="Postu sil"><Trash2 size={16} /></button>

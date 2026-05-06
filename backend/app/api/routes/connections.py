@@ -55,6 +55,14 @@ def reject_request(connection_id: int, db: Session = Depends(get_db), current_us
     return {"message": "Bağlantı rədd edildi"}
 
 
+@router.get("/sent")
+def get_sent(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    sent = db.query(Connection).filter(
+        Connection.sender_id == current_user.id, Connection.status == "pending"
+    ).all()
+    return [{"receiver_id": c.receiver_id} for c in sent]
+
+
 @router.get("/pending")
 def get_pending(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     requests = db.query(Connection).filter(
