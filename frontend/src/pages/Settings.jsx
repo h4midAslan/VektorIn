@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe } from "lucide-react";
+import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe, Lock, Eye, EyeOff } from "lucide-react";
 import { useDarkClasses } from "../hooks/useDarkClasses";
 import { useLang, setLang } from "../hooks/useLang";
+import api from "../api/client";
+import { toast } from "../components/Toast";
 
 const BG_OPTIONS = [
   { id: "default", labelKey: "bg_default", preview: "bg-gray-50" },
@@ -17,7 +19,35 @@ const LANG_OPTIONS = [
 export default function Settings() {
   const [selected, setSelected] = useState(localStorage.getItem("bg_theme") || "default");
   const [darkMode, setDarkMode] = useState(localStorage.getItem("dark_mode") === "true");
+  const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
+  const [pwLoading, setPwLoading] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
   const { lang, t } = useLang();
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (pwForm.newPw !== pwForm.confirm) {
+      toast.error("Yeni şifrələr uyğun gəlmir");
+      return;
+    }
+    if (pwForm.newPw.length < 6) {
+      toast.error("Şifrə ən az 6 simvol olmalıdır");
+      return;
+    }
+    setPwLoading(true);
+    try {
+      await api.put("/users/me/password", {
+        current_password: pwForm.current,
+        new_password: pwForm.newPw,
+      });
+      toast.success("Şifrə uğurla dəyişdirildi");
+      setPwForm({ current: "", newPw: "", confirm: "" });
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
+    }
+    setPwLoading(false);
+  };
 
   const handleSelect = (id) => {
     setSelected(id);
@@ -71,6 +101,60 @@ export default function Settings() {
             </div>
           </button>
         </div>
+      </div>
+
+      {/* Password Change */}
+      <div className={`${d.card} rounded-2xl shadow-sm p-6 mb-6`}>
+        <div className="flex items-center gap-2 mb-5">
+          <Lock size={18} className={d.textMuted} />
+          <h2 className={`text-lg font-semibold ${d.text}`}>Şifrəni dəyişdir</h2>
+        </div>
+        <form onSubmit={handleChangePassword} className="space-y-3">
+          <div className="relative">
+            <input
+              type={showCurrent ? "text" : "password"}
+              placeholder="Cari şifrə"
+              value={pwForm.current}
+              onChange={(e) => setPwForm({ ...pwForm, current: e.target.value })}
+              className={`w-full px-4 py-3 pr-11 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${d.inputAlt}`}
+              required
+            />
+            <button type="button" onClick={() => setShowCurrent(v => !v)} className={`absolute right-3 top-3.5 ${d.textFaint} hover:opacity-80`}>
+              {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          <div className="relative">
+            <input
+              type={showNew ? "text" : "password"}
+              placeholder="Yeni şifrə (min. 6 simvol)"
+              value={pwForm.newPw}
+              onChange={(e) => setPwForm({ ...pwForm, newPw: e.target.value })}
+              className={`w-full px-4 py-3 pr-11 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${d.inputAlt}`}
+              required
+            />
+            <button type="button" onClick={() => setShowNew(v => !v)} className={`absolute right-3 top-3.5 ${d.textFaint} hover:opacity-80`}>
+              {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          <input
+            type="password"
+            placeholder="Yeni şifrəni təkrarla"
+            value={pwForm.confirm}
+            onChange={(e) => setPwForm({ ...pwForm, confirm: e.target.value })}
+            className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition ${d.inputAlt}`}
+            required
+          />
+          {pwForm.newPw && pwForm.confirm && pwForm.newPw !== pwForm.confirm && (
+            <p className="text-xs text-red-500 mt-1">Şifrələr uyğun gəlmir</p>
+          )}
+          <button
+            type="submit"
+            disabled={pwLoading || !pwForm.current || !pwForm.newPw || !pwForm.confirm}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-blue-200 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          >
+            {pwLoading ? "Dəyişdirilir..." : "Şifrəni dəyişdir"}
+          </button>
+        </form>
       </div>
 
       {/* Language Selector */}

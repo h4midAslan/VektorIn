@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.services.database import get_db
-from app.services.auth import get_current_user
+from app.services.auth import get_current_user, verify_password, hash_password
 from app.models.user import User
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -61,6 +61,22 @@ def update_profile(data: UpdateProfileRequest, db: Session = Depends(get_db), cu
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.put("/me/password")
+def change_password(data: ChangePasswordRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not verify_password(data.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Cari şifrə yanlışdır")
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Yeni şifrə ən az 6 simvol olmalıdır")
+    current_user.password_hash = hash_password(data.new_password)
+    db.commit()
+    return {"message": "Şifrə uğurla dəyişdirildi"}
 
 
 @router.get("/search", response_model=list[UserResponse])
