@@ -23,6 +23,8 @@ class User(Base):
     skills = Column(Text)  # comma-separated: "Python,React,Design"
     certificates = Column(Text)  # comma-separated
     is_open_for_team = Column(Boolean, default=False)  # komanda ucun aciq
+    ban_reason = Column(String(500), nullable=True)
+    banned_until = Column(DateTime(timezone=True), nullable=True)
     is_admin = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)

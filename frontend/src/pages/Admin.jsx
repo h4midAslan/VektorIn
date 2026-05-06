@@ -23,6 +23,9 @@ export default function Admin() {
   const [loading, setLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [banModal, setBanModal] = useState(null); // {userId, userName}
+  const [banReason, setBanReason] = useState("");
+  const [banDays, setBanDays] = useState("");
 
   useEffect(() => {
     loadStats();
@@ -112,6 +115,35 @@ export default function Admin() {
   const toggleActive = async (userId) => {
     try {
       await api.patch(`/admin/users/${userId}/toggle-active`);
+      loadUsers();
+      loadStats();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
+    }
+  };
+
+  const submitBan = async () => {
+    if (!banModal) return;
+    try {
+      await api.post(`/admin/users/${banModal.userId}/ban`, {
+        reason: banReason || null,
+        days: banDays ? parseInt(banDays) : null,
+      });
+      toast.success(`${banModal.userName} ban edildi`);
+      setBanModal(null);
+      setBanReason("");
+      setBanDays("");
+      loadUsers();
+      loadStats();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
+    }
+  };
+
+  const unbanUser = async (userId, name) => {
+    try {
+      await api.post(`/admin/users/${userId}/unban`);
+      toast.success(`${name} ban-dan çıxarıldı`);
       loadUsers();
       loadStats();
     } catch (err) {
@@ -446,17 +478,23 @@ export default function Admin() {
                     >
                       <Eye size={15} />
                     </button>
-                    <button
-                      onClick={() => toggleActive(user.id)}
-                      className={`p-2 rounded-lg transition-all border ${
-                        user.is_active
-                          ? "bg-orange-50 text-orange-500 hover:bg-orange-100 border-orange-100"
-                          : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100"
-                      }`}
-                      title={user.is_active ? "Blokla" : "Aktiv et"}
-                    >
-                      {user.is_active ? <Ban size={15} /> : <CheckCircle size={15} />}
-                    </button>
+                    {user.is_active ? (
+                      <button
+                        onClick={() => setBanModal({ userId: user.id, userName: user.full_name })}
+                        className="p-2 rounded-lg transition-all border bg-orange-50 text-orange-500 hover:bg-orange-100 border-orange-100"
+                        title="Ban et"
+                      >
+                        <Ban size={15} />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => unbanUser(user.id, user.full_name)}
+                        className="p-2 rounded-lg transition-all border bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100"
+                        title="Banı qaldır"
+                      >
+                        <CheckCircle size={15} />
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleAdmin(user.id)}
                       className={`p-2 rounded-lg transition-all border ${
@@ -742,6 +780,11 @@ export default function Admin() {
                 <option value="login_success">Uğurlu giriş</option>
                 <option value="login_failed">Uğursuz giriş</option>
                 <option value="register">Qeydiyyat</option>
+                <option value="admin_ban">Admin — Ban</option>
+                <option value="admin_unban">Admin — Ban qaldır</option>
+                <option value="admin_delete_user">Admin — İstifadəçi sil</option>
+                <option value="admin_delete_post">Admin — Post sil</option>
+                <option value="admin_pin_post">Admin — Post sabitlə</option>
               </select>
               <form onSubmit={(e) => { e.preventDefault(); loadLogs(); }} className="flex-1 flex gap-3">
                 <div className="relative flex-1">
@@ -802,15 +845,68 @@ export default function Admin() {
         )}
       </div>
     </div>
+
+    {/* Ban Modal */}
+    {banModal && (
+      <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4" onClick={() => setBanModal(null)}>
+        <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl" onClick={e => e.stopPropagation()}>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
+              <Ban size={18} className="text-red-500" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900">İstifadəçini ban et</h3>
+              <p className="text-xs text-gray-400">{banModal.userName}</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Ban səbəbi</label>
+              <input
+                type="text"
+                value={banReason}
+                onChange={e => setBanReason(e.target.value)}
+                placeholder="Qaydaların pozulması, spam..."
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Müddət (gün)</label>
+              <select
+                value={banDays}
+                onChange={e => setBanDays(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+              >
+                <option value="">Qeyri-müəyyən (daimi)</option>
+                <option value="1">1 gün</option>
+                <option value="3">3 gün</option>
+                <option value="7">7 gün</option>
+                <option value="14">14 gün</option>
+                <option value="30">30 gün</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-5">
+            <button onClick={() => setBanModal(null)} className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition">Ləğv et</button>
+            <button onClick={submitBan} className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition">Ban et</button>
+          </div>
+        </div>
+      </div>
+    )}
   );
 }
 
 
 /* ─── Log Row ─── */
 const actionMeta = {
-  login_success: { label: "Uğurlu giriş", icon: LogIn, color: "emerald" },
-  login_failed: { label: "Uğursuz giriş", icon: Ban, color: "red" },
-  register: { label: "Qeydiyyat", icon: UserPlus, color: "blue" },
+  login_success:      { label: "Uğurlu giriş",      icon: LogIn,    color: "emerald" },
+  login_failed:       { label: "Uğursuz giriş",      icon: Ban,      color: "red" },
+  register:           { label: "Qeydiyyat",           icon: UserPlus, color: "blue" },
+  admin_ban:          { label: "Admin — Ban",         icon: Ban,      color: "red" },
+  admin_unban:        { label: "Admin — Ban qaldır",  icon: CheckCircle, color: "emerald" },
+  admin_delete_user:  { label: "Admin — İstifadəçi sil", icon: Trash2, color: "red" },
+  admin_delete_post:  { label: "Admin — Post sil",   icon: Trash2,   color: "red" },
+  admin_pin_post:     { label: "Admin — Sabitlə",    icon: Pin,      color: "amber" },
   profile_picture_update: { label: "Profil şəkli", icon: Image, color: "violet" },
   message_send: { label: "Mesaj", icon: Send, color: "amber" },
 };

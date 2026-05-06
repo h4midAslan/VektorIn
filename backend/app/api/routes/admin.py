@@ -1,10 +1,11 @@
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from pydantic import BaseModel
 from app.services.database import get_db
 from app.services.auth import get_current_user
+from app.services.activity_logger import log_activity
 from app.models.user import User
 from app.models.post import Post, PostLike, PostDislike, Comment, PostReport
 from app.models.connection import Connection
@@ -118,18 +119,56 @@ def get_all_users(q: str = "", db: Session = Depends(get_db), admin: User = Depe
     ]
 
 
+class BanRequest(BaseModel):
+    reason: str | None = None
+    days: int | None = None  # None = qeyri-müəyyən müddət
+
+
 @router.patch("/users/{user_id}/toggle-active")
 def toggle_user_active(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
     if user_id == admin.id:
         raise HTTPException(status_code=400, detail="Özünüzü blok edə bilməzsiniz")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="İstifadəçi tapılmadı")
+    user.is_active = not user.is_active
+    if user.is_active:
+        user.ban_reason = None
+        user.banned_until = None
+    db.commit()
+    return {"message": f"{'Aktiv edildi' if user.is_active else 'Blok edildi'}", "is_active": user.is_active}
 
+
+@router.post("/users/{user_id}/ban")
+def ban_user(user_id: int, data: BanRequest, request: Request, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    if user_id == admin.id:
+        raise HTTPException(status_code=400, detail="Özünüzü ban edə bilməzsiniz")
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="İstifadəçi tapılmadı")
 
-    user.is_active = not user.is_active
+    user.is_active = False
+    user.ban_reason = data.reason
+    user.banned_until = datetime.now(timezone.utc) + timedelta(days=data.days) if data.days else None
     db.commit()
-    return {"message": f"{'Aktiv edildi' if user.is_active else 'Blok edildi'}", "is_active": user.is_active}
+
+    log_activity(db, action="admin_ban", user_id=admin.id, email=admin.email, request=request,
+                 details=f"Ban: {user.email} | Səbəb: {data.reason or '-'} | Müddət: {f'{data.days} gün' if data.days else 'qeyri-müəyyən'}")
+    return {"message": "İstifadəçi ban edildi"}
+
+
+@router.post("/users/{user_id}/unban")
+def unban_user(user_id: int, request: Request, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="İstifadəçi tapılmadı")
+    user.is_active = True
+    user.ban_reason = None
+    user.banned_until = None
+    db.commit()
+    log_activity(db, action="admin_unban", user_id=admin.id, email=admin.email, request=request,
+                 details=f"Unban: {user.email}")
+    return {"message": "İstifadəçi ban-dan çıxarıldı"}
 
 
 @router.patch("/users/{user_id}/toggle-admin")
@@ -147,7 +186,7 @@ def toggle_user_admin(user_id: int, db: Session = Depends(get_db), admin: User =
 
 
 @router.delete("/users/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+def delete_user(user_id: int, request: Request, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
     if user_id == admin.id:
         raise HTTPException(status_code=400, detail="Özünüzü silə bilməzsiniz")
 
@@ -180,8 +219,11 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depen
         (Message.sender_id == user_id) | (Message.receiver_id == user_id)
     ).delete(synchronize_session=False)
 
+    deleted_email = user.email
     db.delete(user)
     db.commit()
+    log_activity(db, action="admin_delete_user", user_id=admin.id, email=admin.email, request=request,
+                 details=f"Silindi: {deleted_email}")
     return {"message": "İstifadəçi silindi"}
 
 
@@ -210,24 +252,27 @@ def get_all_posts(q: str = "", db: Session = Depends(get_db), admin: User = Depe
 
 
 @router.delete("/posts/{post_id}")
-def delete_post(post_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+def delete_post(post_id: int, request: Request, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post tapılmadı")
-
+    content_preview = (post.content or "")[:80]
     db.delete(post)
     db.commit()
+    log_activity(db, action="admin_delete_post", user_id=admin.id, email=admin.email, request=request,
+                 details=f"Post #{post_id} silindi: {content_preview}")
     return {"message": "Post silindi"}
 
 
 @router.patch("/posts/{post_id}/pin")
-def toggle_pin(post_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+def toggle_pin(post_id: int, request: Request, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post tapılmadı")
-
     post.is_pinned = not post.is_pinned
     db.commit()
+    log_activity(db, action="admin_pin_post", user_id=admin.id, email=admin.email, request=request,
+                 details=f"Post #{post_id} {'sabitləndi' if post.is_pinned else 'sabitlənməsi ləğv edildi'}")
     return {"message": "Pin statusu dəyişdirildi", "is_pinned": post.is_pinned}
 
 
@@ -295,7 +340,9 @@ def dismiss_reports(post_id: int, db: Session = Depends(get_db), admin: User = D
 # ─── Activity Logs ───
 
 # Yalnız hesaba giriş/çıxış və qeydiyyatı göstər — mesaj və şəkil logları məxfidir
-ALLOWED_LOG_ACTIONS = {"login_success", "login_failed", "register"}
+ALLOWED_LOG_ACTIONS = {"login_success", "login_failed", "register",
+                       "admin_ban", "admin_unban", "admin_delete_user",
+                       "admin_delete_post", "admin_pin_post"}
 
 
 class ActivityLogResponse(BaseModel):
