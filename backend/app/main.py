@@ -15,9 +15,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 allowed_origins = [
     "http://localhost:5173",
     "http://localhost:5174",
+    "https://hashcampus.site",
+    "https://www.hashcampus.site",
 ]
 frontend_url = os.getenv("FRONTEND_URL")
-if frontend_url:
+if frontend_url and frontend_url not in allowed_origins:
     allowed_origins.append(frontend_url)
 
 app.add_middleware(
