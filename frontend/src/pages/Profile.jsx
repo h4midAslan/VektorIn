@@ -29,6 +29,7 @@ export default function Profile() {
   const [msgSent, setMsgSent] = useState("");
   const [inbox, setInbox] = useState([]);
   const [showInbox, setShowInbox] = useState(false);
+  const [faculties, setFaculties] = useState({});
   const fileInputRef = useRef(null);
   const d = useDarkClasses();
 
@@ -38,6 +39,7 @@ export default function Profile() {
     loadProjects();
     loadUserPosts();
     loadTemplates();
+    api.get("/auth/faculties").then(res => setFaculties(res.data)).catch(() => {});
   }, [id]);
 
   const loadProfile = async () => {
@@ -317,12 +319,16 @@ export default function Profile() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>İxtisas</label>
-                <input
-                  type="text"
+                <select
                   value={form.major || ""}
                   onChange={(e) => setForm({ ...form, major: e.target.value })}
                   className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${d.inputAlt}`}
-                />
+                >
+                  <option value="">Seçin</option>
+                  {(faculties[form.faculty || user?.faculty] || []).map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>Kurs</label>
