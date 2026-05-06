@@ -41,13 +41,15 @@ Qaydalar:
 Yalnız hazır postu yaz, heç bir izahat əlavə etmə."""
 
     try:
-        async with httpx.AsyncClient(timeout=20) as client:
+        async with httpx.AsyncClient(timeout=30) as client:
             res = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.GEMINI_API_KEY}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={settings.GEMINI_API_KEY}",
                 json={"contents": [{"parts": [{"text": prompt}]}]},
             )
             if res.status_code != 200:
-                raise HTTPException(status_code=502, detail="AI xidmətindən xəta")
+                import logging
+                logging.getLogger(__name__).error("Gemini error %s: %s", res.status_code, res.text)
+                raise HTTPException(status_code=502, detail=f"AI xəta: {res.status_code}")
             result = res.json()
             enhanced = result["candidates"][0]["content"]["parts"][0]["text"]
             return {"text": enhanced.strip()}
