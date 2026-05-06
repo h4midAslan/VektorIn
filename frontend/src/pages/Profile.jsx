@@ -272,7 +272,7 @@ export default function Profile() {
         </div>
 
         <h2 className={`text-2xl font-bold ${d.heading}`}>{user.full_name}</h2>
-        <p className={`${d.textFaint} text-sm mt-1`}>{user.email}</p>
+        {user.email && <p className={`${d.textFaint} text-sm mt-1`}>{user.email}</p>}
 
         {user.is_open_for_team && (
           <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 text-xs px-4 py-1.5 rounded-full mt-3 font-semibold border border-green-100">
@@ -380,7 +380,7 @@ export default function Profile() {
         ) : (
           <div className="mt-8 space-y-4">
             {user.major && (
-              <div className="flex items-center gap-3 ${d.surface} p-4 rounded-xl border ${d.border}">
+              <div className={`flex items-center gap-3 ${d.surface} p-4 rounded-xl border ${d.border}`}>
                 <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                   <GraduationCap size={20} className="text-blue-500" />
                 </div>
@@ -392,7 +392,7 @@ export default function Profile() {
             )}
 
             {user.bio && (
-              <div className="${d.surface} p-5 rounded-xl border ${d.border}">
+              <div className={`${d.surface} p-5 rounded-xl border ${d.border}`}>
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen size={16} className="text-gray-400" />
                   <p className="text-sm text-gray-400 font-medium">Haqqında</p>
@@ -402,7 +402,7 @@ export default function Profile() {
             )}
 
             {user.skills && (
-              <div className="${d.surface} p-5 rounded-xl border ${d.border}">
+              <div className={`${d.surface} p-5 rounded-xl border ${d.border}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles size={16} className="text-gray-400" />
                   <p className="text-sm text-gray-400 font-medium">Bacarıqlar</p>
@@ -418,7 +418,7 @@ export default function Profile() {
             )}
 
             {/* Sertifikatlar */}
-            <div className="${d.surface} p-5 rounded-xl border ${d.border}">
+            <div className={`${d.surface} p-5 rounded-xl border ${d.border}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Award size={16} className="text-gray-400" />
@@ -471,7 +471,7 @@ export default function Profile() {
             </div>
 
             {/* Postlar */}
-            <div className="${d.surface} p-5 rounded-xl border ${d.border}">
+            <div className={`${d.surface} p-5 rounded-xl border ${d.border}`}>
               <div className="flex items-center gap-2 mb-3">
                 <FileText size={16} className="text-gray-400" />
                 <p className="text-sm text-gray-400 font-medium">Postlar</p>
@@ -523,7 +523,7 @@ export default function Profile() {
             </div>
 
             {/* Layihələr */}
-            <div className="${d.surface} p-5 rounded-xl border ${d.border}">
+            <div className={`${d.surface} p-5 rounded-xl border ${d.border}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <FolderGit2 size={16} className="text-gray-400" />
