@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
-import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe, Mail } from "lucide-react";
+import { useState } from "react";
+import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe } from "lucide-react";
 import { useDarkClasses } from "../hooks/useDarkClasses";
 import { useLang, setLang } from "../hooks/useLang";
-import api from "../api/client";
-import { toast } from "../components/Toast";
 
 const BG_OPTIONS = [
   { id: "default", labelKey: "bg_default", preview: "bg-gray-50" },
@@ -19,24 +17,7 @@ const LANG_OPTIONS = [
 export default function Settings() {
   const [selected, setSelected] = useState(localStorage.getItem("bg_theme") || "default");
   const [darkMode, setDarkMode] = useState(localStorage.getItem("dark_mode") === "true");
-  const [showEmail, setShowEmail] = useState(false);
   const { lang, t } = useLang();
-
-  useEffect(() => {
-    api.get("/users/me").then(res => setShowEmail(res.data.show_email || false)).catch(() => {});
-  }, []);
-
-  const toggleShowEmail = async () => {
-    const newVal = !showEmail;
-    setShowEmail(newVal);
-    try {
-      await api.put("/users/me", { show_email: newVal });
-      toast.success(newVal ? "Email görünür edildi" : "Email gizlədildi");
-    } catch {
-      setShowEmail(!newVal);
-      toast.error("Xəta baş verdi");
-    }
-  };
 
   const handleSelect = (id) => {
     setSelected(id);
@@ -88,27 +69,6 @@ export default function Settings() {
             >
               {darkMode ? <Moon size={12} className="text-indigo-500" /> : <Sun size={12} className="text-amber-500" />}
             </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Email Privacy */}
-      <div className={`${d.card} rounded-2xl shadow-sm p-6 mb-6`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Mail size={20} className={showEmail ? "text-blue-500" : d.textFaint} />
-            <div>
-              <h2 className={`text-lg font-semibold ${d.text}`}>Email görünüşü</h2>
-              <p className={`text-xs ${d.textFaint}`}>
-                {showEmail ? "Emailiniz profilinizdə hamıya görünür" : "Emailiniz yalnız admininizə görünür"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={toggleShowEmail}
-            className={`relative w-14 h-8 rounded-full transition-all duration-300 ${showEmail ? "bg-blue-500" : "bg-gray-300"}`}
-          >
-            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 ${showEmail ? "left-7" : "left-1"}`} />
           </button>
         </div>
       </div>

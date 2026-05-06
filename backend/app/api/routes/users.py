@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 
 class UserResponse(BaseModel):
     id: int
-    email: str | None
+    email: str
     full_name: str
     headline: str | None
     faculty: str | None
@@ -27,7 +27,6 @@ class UserResponse(BaseModel):
     certificates: str | None
     is_open_for_team: bool
     is_admin: bool
-    show_email: bool = False
     last_seen: datetime | None = None
 
     class Config:
@@ -48,7 +47,6 @@ class UpdateProfileRequest(BaseModel):
     skills: str | None = None
     certificates: str | None = None
     is_open_for_team: bool | None = None
-    show_email: bool | None = None
 
 
 @router.get("/me", response_model=UserResponse)
@@ -93,9 +91,4 @@ def get_user(user_id: int, db: Session = Depends(get_db), current_user: User = D
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="İstifadəçi tapılmadı")
-    is_self = user.id == current_user.id
-    is_admin = current_user.is_admin
-    response = UserResponse.model_validate(user)
-    if not is_self and not is_admin and not user.show_email:
-        response.email = None
-    return response
+    return user

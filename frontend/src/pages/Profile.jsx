@@ -272,7 +272,7 @@ export default function Profile() {
         </div>
 
         <h2 className={`text-2xl font-bold ${d.heading}`}>{user.full_name}</h2>
-        {user.email && <p className={`${d.textFaint} text-sm mt-1`}>{user.email}</p>}
+        <p className={`${d.textFaint} text-sm mt-1`}>{user.email}</p>
 
         {user.is_open_for_team && (
           <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 text-xs px-4 py-1.5 rounded-full mt-3 font-semibold border border-green-100">
