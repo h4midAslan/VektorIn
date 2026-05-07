@@ -74,9 +74,9 @@ def get_hackathons(
         .all()
     )
 
-    # Keçmiş tarixliləri süz, maks 5 göstər
+    # Yalnız keçmiş tarixliləri süz, hamısını göstər
     active = [h for h in all_items if not is_expired(h.deadline or "")]
-    return active[:5]
+    return active
 
 
 @router.post("/refresh")
