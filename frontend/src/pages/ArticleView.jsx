@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Clock, Edit3, Trash2, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, MessageCircle, Clock, Edit3, Trash2, Send, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
@@ -79,6 +79,13 @@ export default function ArticleView() {
   return (
     <div className={`min-h-screen ${isDark ? "bg-gray-950" : "bg-gray-50"}`}>
       <div className="max-w-3xl mx-auto py-10 px-4">
+        <button
+          onClick={() => navigate(-1)}
+          className={`flex items-center gap-2 mb-4 px-3 py-2 rounded-xl text-sm font-medium transition
+            ${isDark ? "text-gray-400 hover:bg-gray-800 hover:text-gray-200" : "text-gray-500 hover:bg-gray-200 hover:text-gray-800"}`}
+        >
+          <ArrowLeft size={16} /> Geri
+        </button>
         <div className={`rounded-3xl shadow-sm overflow-hidden ${isDark ? "bg-gray-900" : "bg-white"}`}>
 
           {article.cover_image && (
