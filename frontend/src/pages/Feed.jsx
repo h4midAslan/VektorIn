@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
@@ -250,14 +250,21 @@ export default function Feed() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {user && (
-        <div className="mb-6">
-          <h1 className={`text-2xl font-bold ${d.heading}`}>
-            {t("feed_title")}
-          </h1>
-          <p className={d.textFaint + " text-sm mt-1"}>{t("feed_placeholder")}</p>
-          {/* <Link to="/article/new" className="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700 transition">
-            <FileText size={16} /> Məqalə yaz
-          </Link> */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className={`text-2xl font-bold ${d.heading}`}>
+              {t("feed_title")}
+            </h1>
+            <p className={d.textFaint + " text-sm mt-1"}>{t("feed_placeholder")}</p>
+          </div>
+          <Link
+            to="/articles"
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition
+              ${d.dark ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+          >
+            <BookOpen size={16} />
+            Məqalələr
+          </Link>
         </div>
       )}
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, Search, Users, User, LogOut, Menu, X, Shield, Settings, Bell, Heart, MessageCircle, UserPlus, UserCheck, BookOpen } from "lucide-react";
+import { Home, Search, Users, User, LogOut, Menu, X, Shield, Settings, Bell, Heart, MessageCircle, UserPlus, UserCheck } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import api from "../api/client";
 import { useDarkMode } from "../hooks/useTheme";
@@ -120,7 +120,6 @@ export default function Navbar() {
 
   const links = [
     { path: "/feed", icon: Home, label: t("nav_feed") },
-    { path: "/articles", icon: BookOpen, label: t("nav_articles") },
     { path: "/search", icon: Search, label: t("nav_search") },
     { path: "/connections", icon: Users, label: t("nav_connections") },
     { path: "/profile", icon: User, label: t("nav_profile") },
