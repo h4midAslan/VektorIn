@@ -92,11 +92,7 @@ def manual_refresh(
 
 
 @router.get("/test-scrape")
-def test_scrape(
-    current_user: User = Depends(get_current_user),
-):
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="Yalnız adminlər")
+def test_scrape():
     from app.services.hackathon_scraper import scrape_devpost, scrape_mlh, scrape_edumap
     devpost = scrape_devpost()
     mlh = scrape_mlh()
