@@ -5,6 +5,7 @@ HTML scraping işləmir (JS-rendered / Cloudflare).
 import re
 import logging
 from datetime import datetime
+from html import unescape
 
 import requests
 
@@ -27,9 +28,24 @@ MONTHS_EN = {
 }
 
 
+def strip_html(text: str) -> str:
+    text = re.sub(r"<[^>]+>", "", text)
+    return unescape(text).strip()
+
+
 def parse_deadline(text: str) -> datetime | None:
     if not text:
         return None
+    # Range "May 07 - 09, 2026" → son hissəni götür "09, 2026" → tam tarix üçün ayı əvvəlki hissədən al
+    range_m = re.search(
+        r"(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|"
+        r"jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)"
+        r"\s+\d{1,2}\s*-\s*(\d{1,2}),?\s*(\d{4})",
+        text, re.IGNORECASE
+    )
+    if range_m:
+        text = f"{range_m.group(1)} {range_m.group(2)}, {range_m.group(3)}"
+
     text = text.strip()
 
     # ISO format: "2026-05-30T00:00:00.000Z"
@@ -104,8 +120,9 @@ def scrape_devpost() -> list[dict]:
                 url = "https://devpost.com" + url
 
             deadline_raw = h.get("submission_period_dates", "") or h.get("ends_at", "")
-            prize = h.get("prize_amount", "") or ""
-            desc = f"Mükafat: {prize}" if prize else h.get("tagline", "Beynəlxalq online hackathon")
+            prize = strip_html(str(h.get("prize_amount", "") or "")).replace("$0", "").strip()
+            tagline = strip_html(str(h.get("tagline", "") or ""))
+            desc = f"Mükafat: {prize}" if prize and prize != "0" else (tagline or "Beynəlxalq online hackathon")
 
             if is_expired(deadline_raw):
                 continue

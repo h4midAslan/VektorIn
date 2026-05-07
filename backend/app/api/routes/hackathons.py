@@ -91,17 +91,6 @@ def manual_refresh(
     return {"detail": "Yeniləmə başladı, bir neçə dəqiqə gözləyin."}
 
 
-@router.get("/test-scrape")
-def test_scrape():
-    from app.services.hackathon_scraper import scrape_devpost, scrape_hackathon_com
-    devpost = scrape_devpost()
-    hcom = scrape_hackathon_com()
-    return {
-        "devpost_count": len(devpost),
-        "devpost": devpost[:3],
-        "hackathon_com_count": len(hcom),
-        "hackathon_com": hcom[:3],
-    }
 
 
 @router.get("/status")
