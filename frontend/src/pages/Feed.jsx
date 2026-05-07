@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen, Trophy } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
@@ -260,6 +260,15 @@ export default function Feed() {
             </h1>
             <p className={d.textFaint + " text-sm mt-1"}>{t("feed_placeholder")}</p>
           </div>
+          <div className="flex items-center gap-2">
+          <Link
+            to="/hackathons"
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition
+              ${d.dark ? "bg-gray-800 text-gray-300 hover:bg-gray-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+          >
+            <Trophy size={16} />
+            Hackathonlar
+          </Link>
           <Link
             to="/articles"
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition
@@ -268,6 +277,7 @@ export default function Feed() {
             <BookOpen size={16} />
             Məqalələr
           </Link>
+          </div>
         </div>
       )}
 
