@@ -28,6 +28,7 @@ def send_verification_code(to_email: str, code: str) -> bool:
             },
             timeout=10,
         )
+        logger.info("Resend response for %s: status=%s body=%s", to_email, res.status_code, res.text)
         if res.status_code in (200, 201):
             return True
         logger.warning("Resend failed for %s: %s %s", to_email, res.status_code, res.text)
