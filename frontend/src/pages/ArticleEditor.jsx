@@ -102,7 +102,9 @@ export default function ArticleEditor() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4">
+    <div className={`min-h-screen ${d.dark ? "bg-gray-950" : "bg-gray-50"}`}>
+    <div className="max-w-3xl mx-auto py-10 px-4">
+      <div className={`rounded-3xl shadow-sm overflow-hidden ${d.dark ? "bg-gray-900" : "bg-white"} px-8 py-8`}>
       <div className="flex items-center justify-between mb-6">
         <button onClick={() => navigate(-1)} className={`text-sm ${d.textMuted} hover:${d.text} transition`}>Geri</button>
         <button onClick={handlePublish} disabled={!title.trim() || saving} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-full font-semibold text-sm hover:shadow-lg transition disabled:opacity-40">
@@ -141,12 +143,14 @@ export default function ArticleEditor() {
       />
 
       {/* Editor */}
-      <div className={`${d.card} rounded-2xl shadow-sm overflow-hidden`}>
+      <div className={`border ${d.border} rounded-2xl overflow-hidden`}>
         <MenuBar editor={editor} d={d} />
         <div className={`article-editor ${d.dark ? "dark-editor" : ""}`} style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
           <EditorContent editor={editor} />
         </div>
       </div>
+      </div>
+    </div>
     </div>
   );
 }
