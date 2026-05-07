@@ -1,6 +1,7 @@
 export default {
   // Navbar
   nav_feed: "Feed",
+  nav_articles: "Articles",
   nav_search: "Search",
   nav_connections: "Connections",
   nav_profile: "Profile",

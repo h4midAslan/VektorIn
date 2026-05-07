@@ -1,6 +1,7 @@
 export default {
   // Navbar
   nav_feed: "Feed",
+  nav_articles: "Məqalələr",
   nav_search: "Axtar",
   nav_connections: "Bağlantılar",
   nav_profile: "Profil",
