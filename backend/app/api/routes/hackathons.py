@@ -27,21 +27,19 @@ class HackathonOut(BaseModel):
 
 
 def _do_refresh():
-    # Background task üçün öz session-unu açır — request session-undan asılı deyil
     from app.services.hackathon_scraper import scrape_hackathons
-    import logging
-    log = logging.getLogger(__name__)
     db = SessionLocal()
     try:
-        log.info("Hackathon scraping başladı...")
+        print("[HACKATHON] Scraping başladı...", flush=True)
         items = scrape_hackathons()
+        print(f"[HACKATHON] {len(items)} nəticə tapıldı, DB-yə yazılır...", flush=True)
         db.query(Hackathon).delete()
         for item in items:
             db.add(Hackathon(**item))
         db.commit()
-        log.info(f"Hackathon scraping tamamlandı: {len(items)} nəticə.")
+        print(f"[HACKATHON] Tamamlandı: {len(items)} nəticə.", flush=True)
     except Exception as e:
-        log.error(f"Scraping xətası: {e}")
+        print(f"[HACKATHON] Xəta: {e}", flush=True)
         db.rollback()
     finally:
         db.close()
@@ -91,6 +89,26 @@ def manual_refresh(
         raise HTTPException(status_code=403, detail="Yalnız adminlər yeniləyə bilər")
     background_tasks.add_task(_do_refresh)
     return {"detail": "Yeniləmə başladı, bir neçə dəqiqə gözləyin."}
+
+
+@router.get("/test-scrape")
+def test_scrape(
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Yalnız adminlər")
+    from app.services.hackathon_scraper import scrape_devpost, scrape_mlh, scrape_edumap
+    devpost = scrape_devpost()
+    mlh = scrape_mlh()
+    edumap = scrape_edumap()
+    return {
+        "devpost_count": len(devpost),
+        "devpost": devpost[:3],
+        "mlh_count": len(mlh),
+        "mlh": mlh[:3],
+        "edumap_count": len(edumap),
+        "edumap": edumap[:3],
+    }
 
 
 @router.get("/status")
