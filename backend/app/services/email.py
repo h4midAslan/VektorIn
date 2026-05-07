@@ -28,11 +28,10 @@ def send_verification_code(to_email: str, code: str) -> bool:
             },
             timeout=10,
         )
-        logger.info("Resend response for %s: status=%s body=%s", to_email, res.status_code, res.text)
+        print(f"[EMAIL] Resend response for {to_email}: status={res.status_code} body={res.text}", flush=True)
         if res.status_code in (200, 201):
             return True
-        logger.warning("Resend failed for %s: %s %s", to_email, res.status_code, res.text)
         return False
     except Exception as e:
-        logger.error("Email send exception for %s: %s", to_email, e)
+        print(f"[EMAIL] Exception for {to_email}: {e}", flush=True)
         return False
