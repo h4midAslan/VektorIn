@@ -18,7 +18,6 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Articles = lazy(() => import("./pages/Articles"));
 const ArticleEditor = lazy(() => import("./pages/ArticleEditor"));
 const ArticleView = lazy(() => import("./pages/ArticleView"));
-const Hackathons = lazy(() => import("./pages/Hackathons"));
 
 const BG_STYLES = {
   default: { style: {} },
@@ -133,7 +132,6 @@ export default function App() {
           <Route path="/article/new" element={<PrivateRoute><ArticleEditor /></PrivateRoute>} />
           <Route path="/article/:id/edit" element={<PrivateRoute><ArticleEditor /></PrivateRoute>} />
           <Route path="/article/:id" element={<PrivateRoute><ArticleView /></PrivateRoute>} />
-          <Route path="/hackathons" element={<PrivateRoute><Hackathons /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/feed" />} />

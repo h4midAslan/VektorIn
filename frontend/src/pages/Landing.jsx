@@ -4,7 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Sphere, MeshDistortMaterial, Float, Stars, Trail, Html } from "@react-three/drei";
 import { motion, useScroll, useTransform, AnimatePresence, useSpring } from "framer-motion";
 import * as THREE from "three";
-import { ArrowRight, Users, BookOpen, Network, FileText, ChevronDown, Zap, Globe, Shield } from "lucide-react";
+import { ArrowRight, Users, BookOpen, Network, FileText, ChevronDown, Globe, Shield } from "lucide-react";
 
 /* ═══════════════════════════════════════
    MOBILE HOOK
@@ -1141,7 +1141,6 @@ const features = [
   { icon: Users,    title: "Tələbə Şəbəkəsi",    desc: "İxtisas və bacarıq filtri ilə düzgün insanı tap, komanda qur.",        gradient: "from-indigo-500 to-violet-600", glow: "rgba(99,102,241,0.18)" },
   { icon: Network,  title: "Professional Bağlantı", desc: "Əlaqə istəyi göndər, peşəkar şəbəkəni genişləndir.",             gradient: "from-blue-500 to-cyan-600",  glow: "rgba(6,182,212,0.18)" },
   { icon: BookOpen, title: "Məqalə Yaz",          desc: "Bilik paylaş, sahənə dair dərin məzmun hazırla.",                    gradient: "from-violet-500 to-purple-600", glow: "rgba(139,92,246,0.18)" },
-  { icon: Zap,      title: "Hackathonlar",         desc: "Aktiv yarışmalara qoşul, komanda tap, mükafat qazan.",               gradient: "from-amber-500 to-orange-600", glow: "rgba(245,158,11,0.18)" },
   { icon: Shield,   title: "Qapalı Kampus",        desc: "Yalnız @naa.edu.az emaili ilə giriş — tam güvənli mühit.",           gradient: "from-emerald-500 to-teal-600", glow: "rgba(16,185,129,0.18)" },
 ];
 
