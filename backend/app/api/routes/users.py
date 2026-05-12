@@ -100,6 +100,8 @@ def search_users(
     q: str = "",
     skill: str = "",
     major: str = "",
+    faculty: str = "",
+    course: int | None = None,
     open_for_team: bool = False,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -112,6 +114,10 @@ def search_users(
         query = query.filter(User.skills.ilike(f"%{skill}%"))
     if major:
         query = query.filter(User.major.ilike(f"%{major}%"))
+    if faculty:
+        query = query.filter(User.faculty.ilike(f"%{faculty}%"))
+    if course:
+        query = query.filter(User.course == course)
     if open_for_team:
         query = query.filter(User.is_open_for_team == True)
 
