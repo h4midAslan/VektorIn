@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
