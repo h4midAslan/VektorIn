@@ -253,80 +253,105 @@ export default function Feed() {
 
       {/* ── LEFT: Profile Sidebar ── */}
       {user && (
-        <aside className="w-64 shrink-0 hidden lg:block">
-          <div className={`rounded-2xl overflow-hidden border ${d.dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"} shadow-sm sticky top-20`}>
+        <aside className="w-60 shrink-0 hidden lg:block">
+          <div className="sticky top-20 rounded-2xl overflow-hidden"
+            style={{
+              background: d.dark
+                ? "rgba(255,255,255,0.04)"
+                : "rgba(255,255,255,0.85)",
+              border: d.dark
+                ? "1px solid rgba(255,255,255,0.08)"
+                : "1px solid rgba(0,0,0,0.08)",
+              backdropFilter: "blur(16px)",
+              boxShadow: d.dark
+                ? "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)"
+                : "0 4px 24px rgba(0,0,0,0.08)",
+            }}>
 
-            {/* Cover + Avatar */}
+            {/* Cover */}
             <div className="relative">
-              <div className="h-16 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
-              <div className="absolute -bottom-7 left-4">
+              <div className="h-14"
+                style={{ background: "linear-gradient(135deg,#2563eb,#7c3aed)" }} />
+              <div className="absolute -bottom-6 left-4"
+                style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>
                 <UserAvatar
                   user={{ full_name: user.full_name, profile_picture: user.profile_picture }}
                   size="lg"
-                  className="ring-2 ring-white dark:ring-gray-900"
                 />
               </div>
             </div>
 
             {/* Info */}
-            <div className="pt-10 px-4 pb-4">
+            <div className="pt-9 px-4 pb-4">
               <Link to={`/profile/${user.id}`}>
-                <h3 className={`font-bold text-sm leading-tight hover:text-blue-600 transition ${d.text}`}>
+                <h3 className="font-bold text-sm leading-tight transition"
+                  style={{ color: d.dark ? "#f1f5f9" : "#0f172a" }}>
                   {user.full_name}
                 </h3>
               </Link>
 
               {user.headline && (
-                <p className={`text-xs mt-1 leading-snug ${d.textSecondary}`}>
+                <p className="text-xs mt-1 leading-snug"
+                  style={{ color: d.dark ? "#94a3b8" : "#475569" }}>
                   {user.headline}
                 </p>
               )}
 
               {(user.faculty || user.major) && (
-                <p className={`text-xs mt-1 ${d.textFaint}`}>
+                <p className="text-xs mt-1"
+                  style={{ color: d.dark ? "#64748b" : "#94a3b8" }}>
                   {[user.major, user.faculty].filter(Boolean).join(" · ")}
                 </p>
               )}
 
               {user.course && (
-                <p className={`text-xs mt-0.5 ${d.textFaint}`}>
+                <p className="text-xs mt-0.5"
+                  style={{ color: d.dark ? "#64748b" : "#94a3b8" }}>
                   {user.course}-ci kurs · MAA
                 </p>
               )}
 
-              {/* Open for team badge */}
               {user.is_open_for_team && (
-                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full"
+                  style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Komanda üçün açıq</span>
+                  <span className="text-xs font-medium text-emerald-500">Komanda üçün açıq</span>
                 </div>
               )}
 
-              <hr className={`my-3 ${d.dark ? "border-gray-800" : "border-gray-100"}`} />
+              <div className="my-3"
+                style={{ height: 1, background: d.dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }} />
 
               {/* Stats */}
-              <div className="space-y-2">
-                <Link to="/connections" className={`flex items-center justify-between group`}>
-                  <span className={`text-xs ${d.textSecondary} group-hover:text-blue-600 transition`}>Bağlantılar</span>
-                  <span className="text-xs font-bold text-blue-600">{connectedIds.size}</span>
+              <div className="space-y-2 mb-3">
+                <Link to="/connections" className="flex items-center justify-between group">
+                  <span className="text-xs transition group-hover:text-blue-400"
+                    style={{ color: d.dark ? "#94a3b8" : "#64748b" }}>Bağlantılar</span>
+                  <span className="text-xs font-bold text-blue-500">{connectedIds.size}</span>
                 </Link>
                 <Link to={`/profile/${user.id}`} className="flex items-center justify-between group">
-                  <span className={`text-xs ${d.textSecondary} group-hover:text-blue-600 transition`}>Profil</span>
-                  <span className={`text-xs font-semibold ${d.textFaint} group-hover:text-blue-600 transition`}>Bax →</span>
+                  <span className="text-xs transition group-hover:text-blue-400"
+                    style={{ color: d.dark ? "#94a3b8" : "#64748b" }}>Profilim</span>
+                  <span className="text-xs font-semibold text-blue-500 opacity-0 group-hover:opacity-100 transition">Bax →</span>
                 </Link>
               </div>
 
-              <hr className={`my-3 ${d.dark ? "border-gray-800" : "border-gray-100"}`} />
+              <div className="my-3"
+                style={{ height: 1, background: d.dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }} />
 
               {/* Skills */}
               {user.skills && (
                 <div className="mb-3">
-                  <p className={`text-xs font-semibold mb-2 ${d.textFaint} uppercase tracking-wide`}>Bacarıqlar</p>
+                  <p className="text-xs font-semibold mb-2 uppercase tracking-wider"
+                    style={{ color: d.dark ? "#475569" : "#94a3b8" }}>Bacarıqlar</p>
                   <div className="flex flex-wrap gap-1.5">
                     {user.skills.split(",").slice(0, 5).map(s => s.trim()).filter(Boolean).map(s => (
-                      <span key={s} className={`text-xs px-2 py-0.5 rounded-full
-                        ${d.dark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                                 : "bg-blue-50 text-blue-700 border border-blue-100"}`}>
+                      <span key={s} className="text-xs px-2 py-0.5 rounded-full"
+                        style={{
+                          background: d.dark ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.08)",
+                          border: "1px solid rgba(99,102,241,0.25)",
+                          color: d.dark ? "#a5b4fc" : "#6366f1",
+                        }}>
                         {s}
                       </span>
                     ))}
@@ -334,49 +359,53 @@ export default function Feed() {
                 </div>
               )}
 
-              {/* Links */}
-              <div className="space-y-1">
-                <Link to="/articles"
-                  className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition
-                    ${d.dark ? "text-gray-400 hover:bg-gray-800 hover:text-white"
-                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
-                  <BookOpen size={14} />
-                  Məqalələr
-                </Link>
-                <Link to="/connections"
-                  className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition
-                    ${d.dark ? "text-gray-400 hover:bg-gray-800 hover:text-white"
-                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
-                  <Users size={14} />
-                  Şəbəkəm
-                </Link>
-                <Link to="/messages"
-                  className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition
-                    ${d.dark ? "text-gray-400 hover:bg-gray-800 hover:text-white"
-                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
-                  <MessageCircle size={14} />
-                  Mesajlar
-                </Link>
+              {/* Nav links */}
+              <div className="space-y-0.5">
+                {[
+                  { to: "/articles",    icon: BookOpen,      label: "Məqalələr" },
+                  { to: "/connections", icon: Users,         label: "Şəbəkəm" },
+                  { to: "/messages",    icon: MessageCircle, label: "Mesajlar" },
+                ].map(({ to, icon: Icon, label }) => (
+                  <Link key={to} to={to}
+                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    style={{ color: d.dark ? "#64748b" : "#94a3b8" }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = d.dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
+                      e.currentTarget.style.color = d.dark ? "#e2e8f0" : "#1e293b";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = d.dark ? "#64748b" : "#94a3b8";
+                    }}>
+                    <Icon size={13} />
+                    {label}
+                  </Link>
+                ))}
               </div>
 
               {/* Social links */}
               {(user.github_url || user.linkedin_url) && (
                 <>
-                  <hr className={`my-3 ${d.dark ? "border-gray-800" : "border-gray-100"}`} />
+                  <div className="my-3"
+                    style={{ height: 1, background: d.dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }} />
                   <div className="flex gap-2">
                     {user.github_url && (
                       <a href={user.github_url} target="_blank" rel="noreferrer"
-                        className={`text-xs px-2.5 py-1 rounded-lg border transition font-medium
-                          ${d.dark ? "border-gray-700 text-gray-400 hover:border-gray-600 hover:text-white"
-                                   : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-800"}`}>
+                        className="text-xs px-2.5 py-1 rounded-lg font-medium transition"
+                        style={{
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          color: d.dark ? "#94a3b8" : "#64748b",
+                        }}>
                         GitHub
                       </a>
                     )}
                     {user.linkedin_url && (
                       <a href={user.linkedin_url} target="_blank" rel="noreferrer"
-                        className={`text-xs px-2.5 py-1 rounded-lg border transition font-medium
-                          ${d.dark ? "border-gray-700 text-gray-400 hover:border-blue-500 hover:text-blue-400"
-                                   : "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"}`}>
+                        className="text-xs px-2.5 py-1 rounded-lg font-medium transition"
+                        style={{
+                          border: "1px solid rgba(99,102,241,0.25)",
+                          color: d.dark ? "#a5b4fc" : "#6366f1",
+                        }}>
                         LinkedIn
                       </a>
                     )}
