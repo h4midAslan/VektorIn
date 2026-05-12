@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -109,7 +110,10 @@ def search_users(
     query = db.query(User).filter(User.is_active == True, User.id != current_user.id)
 
     if q:
-        query = query.filter(User.full_name.ilike(f"%{q}%"))
+        query = query.filter(or_(
+            User.full_name.ilike(f"{q}%"),
+            User.full_name.ilike(f"% {q}%"),
+        ))
     if skill:
         query = query.filter(User.skills.ilike(f"%{skill}%"))
     if major:
