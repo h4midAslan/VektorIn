@@ -53,6 +53,7 @@ export default function Search() {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    if (!query && !skill && !course && !openForTeam) return;
     clearTimeout(debounceRef.current);
     doSearch(query, skill, course, openForTeam);
   };
