@@ -1213,9 +1213,6 @@ export default function Landing() {
         {/* 3D Canvas */}
         <HeroScene mouseX={mouseX} mouseY={mouseY} />
 
-        {/* HUD Overlay */}
-        <HUDOverlay />
-
         {/* Hero text */}
         <div className="relative z-10 text-center px-6 max-w-5xl mx-auto pointer-events-none">
           <AnimatePresence>
