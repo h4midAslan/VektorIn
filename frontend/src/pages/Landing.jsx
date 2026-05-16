@@ -759,12 +759,12 @@ function RegistrationMockup({ active }) {
 
   const card = {
     background: "rgba(6,18,36,0.95)", border: "1px solid rgba(56,189,248,0.15)",
-    borderRadius: 16, padding: "28px 24px", width: "100%", maxWidth: 360,
+    borderRadius: 0, padding: "28px 24px", width: "100%", maxWidth: 360,
     boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
   };
   const inp = {
     width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 8, padding: "10px 14px", color: "#e2e8f0", fontSize: 14,
+    borderRadius: 0, padding: "10px 14px", color: "#e2e8f0", fontSize: 14,
     fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   };
   const lbl = { fontSize: 11, color: "#64748b", marginBottom: 5, display: "block" };
@@ -802,7 +802,7 @@ function RegistrationMockup({ active }) {
 
       {/* Button */}
       <div style={{
-        width: "100%", padding: "12px", borderRadius: 10, textAlign: "center",
+        width: "100%", padding: "12px", borderRadius: 0, textAlign: "center",
         fontWeight: 700, fontSize: 14,
         background: stage === 0 ? "linear-gradient(135deg,#0ea5e9,#2563eb)" :
                     stage === 1 ? "rgba(14,165,233,0.4)" : "linear-gradient(135deg,#22c55e,#16a34a)",
@@ -816,7 +816,7 @@ function RegistrationMockup({ active }) {
       {/* Verify email note */}
       {stage === 2 && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8,
+          style={{ marginTop: 14, padding: "10px 14px", borderRadius: 0,
             background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)",
             fontSize: 11, color: "#86efac", textAlign: "center" }}>
           📬 naa.edu.az emailinə doğrulama linki göndərildi
@@ -848,7 +848,7 @@ function ProfileMockup({ active }) {
 
   const card = {
     background: "rgba(6,18,36,0.95)", border: "1px solid rgba(56,189,248,0.15)",
-    borderRadius: 16, padding: "24px", width: "100%", maxWidth: 360,
+    borderRadius: 0, padding: "24px", width: "100%", maxWidth: 360,
     boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
   };
 
@@ -873,9 +873,9 @@ function ProfileMockup({ active }) {
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b", marginBottom: 6 }}>
           <span>Profil tamamlanma</span><span style={{ color: "#38bdf8" }}>{progress}%</span>
         </div>
-        <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99 }}>
+        <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 0 }}>
           <motion.div animate={{ width: `${progress}%` }} transition={{ duration: 0.05 }}
-            style={{ height: "100%", borderRadius: 99,
+            style={{ height: "100%", borderRadius: 0,
               background: "linear-gradient(90deg,#0ea5e9,#6366f1)",
               boxShadow: "0 0 8px rgba(14,165,233,0.5)" }} />
         </div>
@@ -886,7 +886,7 @@ function ProfileMockup({ active }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
         {skills.slice(0, visSkills).map((s, i) => (
           <motion.span key={s} initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
-            style={{ fontSize: 11, padding: "4px 10px", borderRadius: 99,
+            style={{ fontSize: 11, padding: "4px 10px", borderRadius: 2,
               background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.25)",
               color: "#7dd3fc" }}>{s}</motion.span>
         ))}
@@ -896,7 +896,7 @@ function ProfileMockup({ active }) {
       <AnimatePresence>
         {showConn && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            style={{ padding: "10px 14px", borderRadius: 10,
+            style={{ padding: "10px 14px", borderRadius: 0,
               background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)",
               display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 12, color: "#a5b4fc" }}>🔔 3 əlaqə istəyi gözləyir</span>
@@ -930,7 +930,7 @@ function NetworkMockup({ active }) {
 
   const card = {
     background: "rgba(6,18,36,0.95)", border: "1px solid rgba(56,189,248,0.15)",
-    borderRadius: 16, padding: "16px", width: "100%", maxWidth: 360,
+    borderRadius: 0, padding: "16px", width: "100%", maxWidth: 360,
     boxShadow: "0 24px 80px rgba(0,0,0,0.5)", overflow: "hidden",
   };
 
@@ -940,7 +940,7 @@ function NetworkMockup({ active }) {
       <AnimatePresence>
         {showNotif && (
           <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-            style={{ padding: "9px 12px", borderRadius: 10, marginBottom: 14,
+            style={{ padding: "9px 12px", borderRadius: 0, marginBottom: 14,
               background: "rgba(251,146,60,0.09)", border: "1px solid rgba(251,146,60,0.25)",
               display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#fdba74" }}>
             <span>🔔</span>
@@ -953,7 +953,7 @@ function NetworkMockup({ active }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {posts.slice(0, visPosts).map((p, i) => (
           <motion.div key={p.name} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-            style={{ padding: "12px", borderRadius: 10,
+            style={{ padding: "12px", borderRadius: 0,
               background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <div style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
@@ -1040,7 +1040,7 @@ function StepRow({ step, index, mockup }) {
           }}
           transition={{ duration: 0.5 }}
           style={{
-            width: 52, height: 52, borderRadius: 14,
+            width: 52, height: 52, borderRadius: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 16, fontWeight: 900,
             color: active ? "#fff" : "#334155",
@@ -1178,7 +1178,7 @@ export default function Landing() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 md:px-8 py-4"
-        style={{ background: "linear-gradient(180deg,rgba(4,12,24,0.95) 0%,transparent 100%)", backdropFilter: "blur(14px)" }}
+        style={{ background: "rgba(4,12,24,0.98)", borderBottom: "1px solid rgba(56,189,248,0.15)" }}
       >
         <span className="text-2xl font-black tracking-tight select-none"
           style={{ background: "linear-gradient(135deg,#38bdf8,#818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -1188,8 +1188,8 @@ export default function Landing() {
           <Link to="/login" className="px-5 py-2 text-sm font-medium text-sky-300 hover:text-white transition-colors duration-200">
             Daxil ol
           </Link>
-          <Link to="/register" className="px-5 py-2 text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105"
-            style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 24px rgba(14,165,233,0.4)" }}>
+          <Link to="/register" className="px-5 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105"
+            style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 24px rgba(14,165,233,0.4)", borderRadius: 0 }}>
             Qeydiyyat
           </Link>
         </div>
@@ -1222,8 +1222,8 @@ export default function Landing() {
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.7 }}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6 text-xs font-semibold tracking-widest uppercase pointer-events-auto"
-                  style={{ border: "1px solid rgba(56,189,248,0.28)", background: "rgba(56,189,248,0.07)", color: "#7dd3fc" }}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 text-xs font-semibold tracking-widest uppercase pointer-events-auto"
+                  style={{ border: "1px solid rgba(56,189,248,0.28)", background: "rgba(56,189,248,0.07)", color: "#7dd3fc", borderRadius: 2 }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
                   Milli Aviasiya Akademiyası · Qapalı Platforma
@@ -1250,7 +1250,7 @@ export default function Landing() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.62, duration: 0.7 }}
                   className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
-                  style={{ color: "#94a3b8" }}
+                  style={{ color: "#7dd3fc" }}
                 >
                   Hash — MAA tələbələri üçün vahid akademik şəbəkə. Layihə tap,
                   komanda qur, sahənin ən yaxşıları ilə əlaqə saxla.
@@ -1263,13 +1263,13 @@ export default function Landing() {
                   className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-20 pointer-events-auto px-4"
                 >
                   <Link to="/register"
-                    className="flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl w-full sm:w-auto justify-center"
-                    style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 50px rgba(14,165,233,0.45), inset 0 1px 0 rgba(255,255,255,0.12)" }}>
+                    className="flex items-center gap-2 px-7 py-3.5 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl w-full sm:w-auto justify-center"
+                    style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 50px rgba(14,165,233,0.45), inset 0 1px 0 rgba(255,255,255,0.12)", borderRadius: 0, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: 13 }}>
                     Platformaya qoşul <ArrowRight size={18} />
                   </Link>
                   <Link to="/login"
-                    className="flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium transition-all duration-300 hover:scale-105 w-full sm:w-auto justify-center"
-                    style={{ border: "1px solid rgba(255,255,255,0.11)", background: "rgba(255,255,255,0.04)", backdropFilter: "blur(8px)" }}>
+                    className="flex items-center gap-2 px-7 py-3.5 font-medium transition-all duration-300 hover:scale-105 w-full sm:w-auto justify-center"
+                    style={{ border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.04)", borderRadius: 0 }}>
                     Daxil ol
                   </Link>
                 </motion.div>
@@ -1284,6 +1284,7 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0, duration: 0.7 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-8 md:gap-14 z-10"
+          style={{ borderTop: "1px solid rgba(56,189,248,0.1)", paddingTop: 16 }}
         >
           {[
             { target: "3000", suffix: "+", label: "Tələbə" },
@@ -1334,8 +1335,8 @@ export default function Landing() {
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.6, delay: i * 0.08 }}
               whileHover={{ y: -8, scale: 1.025 }}
-              className="group relative rounded-2xl p-7 cursor-default transition-all duration-300"
-              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(10px)" }}
+              className="group relative p-7 cursor-default transition-all duration-300"
+              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 0 }}
               onMouseEnter={e => {
                 e.currentTarget.style.boxShadow = `0 24px 70px ${f.glow}, inset 0 1px 0 rgba(255,255,255,0.07)`;
                 e.currentTarget.style.border = "1px solid rgba(255,255,255,0.12)";
@@ -1345,7 +1346,7 @@ export default function Landing() {
                 e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)";
               }}
             >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-5 shadow-lg`}>
+              <div className={`w-12 h-12 bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-5 shadow-lg`} style={{ borderRadius: 0 }}>
                 <f.icon size={22} className="text-white" />
               </div>
               <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
@@ -1365,15 +1366,14 @@ export default function Landing() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="relative overflow-hidden rounded-3xl p-8 md:p-14 text-center"
+          className="relative overflow-hidden p-8 md:p-14 text-center"
           style={{
+            borderRadius: 0,
             background: "linear-gradient(135deg,rgba(12,37,80,0.92) 0%,rgba(4,12,24,0.97) 100%)",
             border: "1px solid rgba(56,189,248,0.14)",
             boxShadow: "0 0 130px rgba(14,165,233,0.1), inset 0 1px 0 rgba(255,255,255,0.05)",
           }}
         >
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-64 rounded-full blur-3xl pointer-events-none"
-            style={{ background: "rgba(14,165,233,0.13)" }} />
           <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: "#38bdf8" }}>Başlamağa hazırsan?</p>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4 relative">
             Akademik karyeranı<br />bu gün inşa et.
@@ -1382,8 +1382,8 @@ export default function Landing() {
             @naa.edu.az və ya @student.naa.edu.az email ünvanınla qeydiyyatdan keç.
           </p>
           <Link to="/register"
-            className="inline-flex items-center gap-2 px-10 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105"
-            style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 55px rgba(14,165,233,0.48)" }}>
+            className="inline-flex items-center gap-2 px-10 py-4 font-semibold transition-all duration-300 hover:scale-105"
+            style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 55px rgba(14,165,233,0.48)", borderRadius: 0, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: 13 }}>
             Qeydiyyatdan keç <ArrowRight size={18} />
           </Link>
         </motion.div>
