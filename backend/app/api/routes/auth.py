@@ -79,7 +79,7 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
     if not any(data.email.endswith(d) for d in ALLOWED_DOMAINS):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Yalnız @naa.edu.az, @student.naa.edu.az və ya @unec.edu.az email ilə qeydiyyat mümkündür"
+            detail="Yalnız @naa.edu.az və ya @student.naa.edu.az email ilə qeydiyyat mümkündür"
         )
 
     if data.faculty not in FACULTY_SPECIALIZATIONS:
