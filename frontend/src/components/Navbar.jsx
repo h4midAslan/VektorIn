@@ -114,7 +114,7 @@ export default function Navbar() {
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", height: 48 }}>
         {/* Logo */}
         <Link to="/feed" style={{ fontWeight: 800, fontSize: 15, color: "#1a2a3a", textDecoration: "none", marginRight: 20, letterSpacing: "-0.3px", flexShrink: 0 }}>
-          VektorIn
+          Hash
         </Link>
 
         {/* Desktop links */}
