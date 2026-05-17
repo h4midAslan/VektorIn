@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Send, MessageCircle, ArrowLeft, Circle, CheckCheck } from "lucide-react";
 import api from "../api/client";
+import { toast } from "../components/Toast";
 import { formatBakuHM, isActiveNow, formatLastSeen } from "../utils/time";
 import { useLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -212,8 +213,12 @@ export default function Messages() {
         if (exists) return prev.map(c => c.user_id === activeChat.userId ? { ...c, last_message: content } : c);
         return [{ user_id: activeChat.userId, full_name: activeChat.fullName, profile_picture: activeChat.picture, last_message: content, unread_count: 0 }, ...prev];
       });
-    } catch {
+    } catch (err) {
       setNewMsg(content);
+      const detail = err.response?.data?.detail;
+      if (err.response?.status === 403) {
+        toast.error(detail || "Yalnız bağlantılarınıza mesaj göndərə bilərsiniz");
+      }
     }
     setSending(false);
   };

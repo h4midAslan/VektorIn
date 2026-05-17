@@ -65,10 +65,16 @@ export default function Profile() {
   const [showProjForm, setShowProjForm] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const [userPosts, setUserPosts] = useState([]);
+  const [isConnected, setIsConnected] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadProfile(); loadCertificates(); loadProjects(); loadUserPosts();
+    if (id) {
+      api.get("/connections/my")
+        .then(res => setIsConnected(res.data.some(c => c.user_id === Number(id))))
+        .catch(() => {});
+    }
   }, [id]);
 
   const loadProfile = async () => {
@@ -283,7 +289,7 @@ export default function Profile() {
                     <Mail size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Mesajlar
                   </button>
                 </>
-              ) : (
+              ) : isConnected && (
                 <button onClick={() => navigate(`/messages?to=${user.id}&name=${encodeURIComponent(user.full_name)}`)} style={{ ...S.btnGhost, width: isMobile ? "100%" : undefined }}>
                   <Mail size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Mesaj
                 </button>

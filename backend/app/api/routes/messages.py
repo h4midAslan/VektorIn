@@ -10,6 +10,7 @@ from app.services.ws_manager import manager
 from app.services.encryption import encrypt_msg, decrypt_msg
 from app.models.user import User
 from app.models.message import Message
+from app.models.connection import Connection
 from app.config import settings
 
 router = APIRouter(prefix="/api/messages", tags=["messages"])
@@ -116,6 +117,16 @@ async def send_message(
     receiver = db.query(User).filter(User.id == user_id).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="İstifadəçi tapılmadı")
+
+    connected = db.query(Connection).filter(
+        or_(
+            and_(Connection.sender_id == current_user.id, Connection.receiver_id == user_id),
+            and_(Connection.sender_id == user_id, Connection.receiver_id == current_user.id),
+        ),
+        Connection.status == "accepted",
+    ).first()
+    if not connected:
+        raise HTTPException(status_code=403, detail="Yalnız bağlantılarınıza mesaj göndərə bilərsiniz")
 
     msg = Message(sender_id=current_user.id, receiver_id=user_id, content=encrypt_msg(content))
     db.add(msg)
