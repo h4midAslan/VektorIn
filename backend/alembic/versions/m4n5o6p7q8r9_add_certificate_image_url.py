@@ -14,7 +14,11 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('certificates', sa.Column('image_url', sa.String(500), nullable=True))
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = [c['name'] for c in inspector.get_columns('certificates')]
+    if 'image_url' not in columns:
+        op.add_column('certificates', sa.Column('image_url', sa.String(500), nullable=True))
 
 
 def downgrade():

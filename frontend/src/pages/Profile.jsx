@@ -165,8 +165,12 @@ export default function Profile() {
     try {
       await api.post("/certificates", { ...certForm, issue_date: certForm.issue_date || null, credential_url: certForm.credential_url || null, image_url: certForm.image_url || null });
       setCertForm({ name: "", issuer: "", issue_date: "", credential_url: "", image_url: "" });
-      setShowCertForm(false); loadCertificates();
-    } catch {}
+      setShowCertForm(false);
+      await loadCertificates();
+      toast.success("Sertifikat əlavə edildi!");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Sertifikat əlavə edilmədi");
+    }
   };
 
   const handleDeleteCert = async (certId) => {
