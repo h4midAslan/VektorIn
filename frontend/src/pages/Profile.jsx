@@ -154,7 +154,10 @@ export default function Profile() {
       const formData = new FormData(); formData.append("file", file);
       const res = await api.post("/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
       setCertForm(prev => ({ ...prev, image_url: res.data.url }));
-    } catch {}
+      toast.success("Şəkil yükləndi!");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Şəkil yüklənmədi");
+    }
     setCertImageUploading(false); e.target.value = "";
   };
 
@@ -472,11 +475,11 @@ export default function Profile() {
               {userPosts.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {userPosts.map(post => {
-                    const imgs = (() => {
-                      if (!post.image_url) return [];
-                      try { const p = JSON.parse(post.image_url); return Array.isArray(p) ? p : [post.image_url]; }
-                      catch { return [post.image_url]; }
-                    })();
+                    const imgs = post.images?.length
+                      ? post.images
+                      : post.image_url
+                        ? (() => { try { const p = JSON.parse(post.image_url); return Array.isArray(p) ? p : [post.image_url]; } catch { return [post.image_url]; } })()
+                        : [];
                     return (
                       <div key={post.id} style={{ border: "1px solid #d4d4d4", background: "#fff" }}>
                         {imgs.length > 0 && (
@@ -612,9 +615,9 @@ export default function Profile() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {certificates.map(cert => (
                     <div key={cert.id} style={{ border: "1px solid #d4d4d4", background: "#fff" }}>
-                      {cert.image_url && (
+                      {cert.image_url && cert.image_url.startsWith("http") && (
                         <a href={cert.image_url} target="_blank" rel="noreferrer">
-                          <img src={cert.image_url} alt={cert.name} style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block", borderBottom: "1px solid #d4d4d4" }} />
+                          <img src={cert.image_url} alt={cert.name} style={{ width: "100%", maxHeight: 200, objectFit: "contain", display: "block", background: "#f5f5f5", borderBottom: "1px solid #d4d4d4" }} />
                         </a>
                       )}
                       <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
