@@ -9,6 +9,28 @@ from app.api.routes import auth, users, posts, connections, messages, admin, cer
 from alembic.config import Config
 from alembic import command
 
+def _ensure_username_column():
+    """Add username column directly via psycopg3 with autocommit — DDL-safe."""
+    import os
+    db_url = os.getenv("DATABASE_URL", "")
+    if not db_url:
+        print("ensure_username: no DATABASE_URL, skipping")
+        return
+    db_url = db_url.replace("postgresql+psycopg://", "postgresql://").replace("postgresql+psycopg2://", "postgresql://")
+    try:
+        import psycopg
+        with psycopg.connect(db_url, autocommit=True) as conn:
+            conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)")
+            print("ensure_username: ADD COLUMN OK")
+            try:
+                conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)")
+                print("ensure_username: CREATE INDEX OK")
+            except Exception as e:
+                print(f"ensure_username: index skip ({e})")
+    except Exception as e:
+        print(f"ensure_username: ERROR {e}")
+
+
 def run_migrations():
     try:
         alembic_cfg = Config("alembic.ini")
@@ -29,21 +51,8 @@ def ensure_tables():
     except Exception as e:
         print(f"ensure_tables xətası: {e}")
 
-    # Ensure columns that migrations may have missed — AUTOCOMMIT for DDL
-    _ddl = [
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
-        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
-    ]
-    try:
-        with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
-            for stmt in _ddl:
-                try:
-                    conn.execute(text(stmt))
-                    print(f"ensure_columns OK: {stmt[:60]}")
-                except Exception as e:
-                    print(f"ensure_columns skip: {stmt[:60]} => {e}")
-    except Exception as e:
-        print(f"ensure_columns connection error: {e}")
+    # Ensure columns via raw psycopg3 connection (bypass SQLAlchemy transactions)
+    _ensure_username_column()
 
 
 run_migrations()
