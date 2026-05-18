@@ -20,6 +20,7 @@ def run_migrations():
 def ensure_tables():
     from app.services.database import engine
     from app.models.base import Base
+    from sqlalchemy import text
     import app.models.article
     import app.models.hackathon
     try:
@@ -27,6 +28,20 @@ def ensure_tables():
         print("ensure_tables: OK")
     except Exception as e:
         print(f"ensure_tables xətası: {e}")
+
+    # Ensure columns that migrations may have missed
+    _safe_sql = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
+    ]
+    try:
+        with engine.connect() as conn:
+            for stmt in _safe_sql:
+                conn.execute(text(stmt))
+            conn.commit()
+        print("ensure_columns: OK")
+    except Exception as e:
+        print(f"ensure_columns xətası: {e}")
 
 
 run_migrations()
