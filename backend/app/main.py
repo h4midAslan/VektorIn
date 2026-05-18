@@ -51,7 +51,7 @@ def ensure_tables():
     except Exception as e:
         print(f"ensure_tables xətası: {e}")
 
-    # Ensure columns via raw psycopg3 connection (bypass SQLAlchemy transactions)
+    # Try to add username column to DB (model uses @property until confirmed)
     _ensure_username_column()
 
 
