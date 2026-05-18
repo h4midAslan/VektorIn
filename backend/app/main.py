@@ -29,18 +29,21 @@ def ensure_tables():
     except Exception as e:
         print(f"ensure_tables xətası: {e}")
 
-    # Ensure columns that migrations may have missed — each in its own transaction
+    # Ensure columns that migrations may have missed — AUTOCOMMIT for DDL
     _ddl = [
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
         "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
     ]
-    for stmt in _ddl:
-        try:
-            with engine.begin() as conn:
-                conn.execute(text(stmt))
-            print(f"ensure_columns OK: {stmt[:60]}")
-        except Exception as e:
-            print(f"ensure_columns skip: {stmt[:60]} => {e}")
+    try:
+        with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+            for stmt in _ddl:
+                try:
+                    conn.execute(text(stmt))
+                    print(f"ensure_columns OK: {stmt[:60]}")
+                except Exception as e:
+                    print(f"ensure_columns skip: {stmt[:60]} => {e}")
+    except Exception as e:
+        print(f"ensure_columns connection error: {e}")
 
 
 run_migrations()
