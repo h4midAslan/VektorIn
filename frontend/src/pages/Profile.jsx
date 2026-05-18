@@ -4,7 +4,7 @@ import { toast } from "../components/Toast";
 import {
   Edit3, Save, X, BookOpen, Award, GraduationCap, Sparkles, Plus, Trash2,
   ExternalLink, Camera, FolderGit2, Code2, Heart, ThumbsDown, MessageCircle,
-  FileText, Send, Mail, Globe, Share2, Check,
+  FileText, Send, Mail, Globe,
 } from "lucide-react";
 
 const GithubIcon = () => (
@@ -68,7 +68,6 @@ export default function Profile() {
   const [isConnected, setIsConnected] = useState(false);
   const [cvParsing, setCvParsing] = useState(false);
   const [cvPreview, setCvPreview] = useState(null);
-  const [linkCopied, setLinkCopied] = useState(false);
   const fileInputRef = useRef(null);
   const cvInputRef = useRef(null);
 
@@ -244,20 +243,6 @@ export default function Profile() {
     toast.success("Profil CV əsasında yeniləndi!");
   };
 
-  const getPublicUrl = () => {
-    const base = window.location.origin;
-    return user?.username ? `${base}/u/${user.username}` : `${base}/u/${user?.id}`;
-  };
-
-  const handleShareCV = async () => {
-    try {
-      await navigator.clipboard.writeText(getPublicUrl());
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      prompt("CV linki:", getPublicUrl());
-    }
-  };
 
   const handleSave = async () => {
     try {
@@ -386,15 +371,7 @@ export default function Profile() {
                     <FileText size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />
                     {cvParsing ? "Oxunur..." : "CV yüklə"}
                   </button>
-                  <button
-                    onClick={handleShareCV}
-                    style={{ ...S.btnGhost, flex: isMobile ? 1 : undefined, color: linkCopied ? "#22c55e" : undefined, borderColor: linkCopied ? "#22c55e" : undefined }}
-                  >
-                    {linkCopied
-                      ? <><Check size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Kopyalandı!</>
-                      : <><Share2 size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />CV paylaş</>
-                    }
-                  </button>
+
                   <button onClick={() => navigate("/messages")} style={{ ...S.btnGhost, flex: isMobile ? 1 : undefined }}>
                     <Mail size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Mesajlar
                   </button>

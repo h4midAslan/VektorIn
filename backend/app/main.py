@@ -5,31 +5,9 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.api.routes import auth, users, posts, connections, messages, admin, certificates, upload, projects, events, articles, notifications, hackathons, public
+from app.api.routes import auth, users, posts, connections, messages, admin, certificates, upload, projects, events, articles, notifications, hackathons
 from alembic.config import Config
 from alembic import command
-
-def _ensure_username_column():
-    """Add username column directly via psycopg3 with autocommit — DDL-safe."""
-    import os
-    db_url = os.getenv("DATABASE_URL", "")
-    if not db_url:
-        print("ensure_username: no DATABASE_URL, skipping")
-        return
-    db_url = db_url.replace("postgresql+psycopg://", "postgresql://").replace("postgresql+psycopg2://", "postgresql://")
-    try:
-        import psycopg
-        with psycopg.connect(db_url, autocommit=True) as conn:
-            conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)")
-            print("ensure_username: ADD COLUMN OK")
-            try:
-                conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)")
-                print("ensure_username: CREATE INDEX OK")
-            except Exception as e:
-                print(f"ensure_username: index skip ({e})")
-    except Exception as e:
-        print(f"ensure_username: ERROR {e}")
-
 
 def run_migrations():
     try:
@@ -51,8 +29,6 @@ def ensure_tables():
     except Exception as e:
         print(f"ensure_tables xətası: {e}")
 
-    # Try to add username column to DB (model uses @property until confirmed)
-    _ensure_username_column()
 
 
 run_migrations()
@@ -94,7 +70,6 @@ app.include_router(events.router)
 app.include_router(articles.router)
 app.include_router(notifications.router)
 app.include_router(hackathons.router)
-app.include_router(public.router)
 
 
 @app.exception_handler(Exception)
