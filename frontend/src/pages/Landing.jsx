@@ -1229,21 +1229,6 @@ export default function Landing() {
                   Milli Aviasiya Akademiyası · Qapalı Platforma
                 </motion.div>
 
-                <motion.h1
-                  initial={{ opacity: 0, y: 36 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.45, duration: 0.85 }}
-                  className="text-4xl md:text-8xl font-black leading-[1.05] tracking-tight mb-5"
-                >
-                  Hash Campus
-                  <br />
-                  <span style={{
-                    background: "linear-gradient(135deg,#38bdf8 0%,#818cf8 55%,#22d3ee 100%)",
-                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-                  }}>
-                    Qapalı icma.
-                  </span>
-                </motion.h1>
 
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
