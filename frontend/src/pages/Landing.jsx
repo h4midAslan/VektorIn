@@ -1235,14 +1235,13 @@ export default function Landing() {
                   transition={{ delay: 0.45, duration: 0.85 }}
                   className="text-4xl md:text-8xl font-black leading-[1.05] tracking-tight mb-5"
                 >
-                  <span style={{ letterSpacing: "-0.02em", fontWeight: 900 }}>Qapalı</span>
+                  Hash Campus
                   <br />
                   <span style={{
                     background: "linear-gradient(135deg,#38bdf8 0%,#818cf8 55%,#22d3ee 100%)",
                     WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-                    letterSpacing: "-0.02em", fontWeight: 900,
                   }}>
-                    İcma.
+                    Qapalı icma.
                   </span>
                 </motion.h1>
 
