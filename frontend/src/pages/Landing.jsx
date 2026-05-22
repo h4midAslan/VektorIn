@@ -1245,7 +1245,7 @@ export default function Landing() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.78, duration: 0.7 }}
-                  className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-20 pointer-events-auto px-4"
+                  className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-16 mb-20 pointer-events-auto px-4"
                 >
                   <Link to="/register"
                     className="flex items-center gap-2 px-7 py-3.5 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl w-full sm:w-auto justify-center"
