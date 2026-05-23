@@ -16,93 +16,40 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
 
-UNIVERSITIES = {
-    "Milli Aviasiya Akademiyası": {
-        "domains": ["@naa.edu.az", "@student.naa.edu.az"],
-        "faculties": {
-            "Hava nəqliyyatı fakültəsi": [
-                "Uçuş mühəndisliyi",
-                "Hava nəqliyyatının hərəkətinin təşkili",
-                "Aerokosmik mühəndislik",
-                "Hidrometeorologiya",
-            ],
-            "Nəqliyyat texnologiyaları fakültəsi": [
-                "Logistika və nəqliyyat texnologiyaları mühəndisliyi",
-                "Mexanika mühəndisliyi",
-                "Aviasiya təhlükəsizliyi mühəndisliyi",
-                "Materiallar mühəndisliyi",
-            ],
-            "Aerokosmik fakültə": [
-                "Kompüter mühəndisliyi",
-                "Ekologiya mühəndisliyi",
-                "İnformasiya texnologiyaları",
-            ],
-            "Fizika-Texnologiya fakültəsi": [
-                "Mühəndislik fizikası",
-                "Radiotexnika və telekommunikasiya mühəndisliyi",
-                "Elektrik və elektronika mühəndisliyi",
-                "Cihaz mühəndisliyi",
-                "Energetika mühəndisliyi",
-                "Proseslərin avtomatlaşdırılması mühəndisliyi",
-                "Mexatronika və robototexnika mühəndisliyi",
-            ],
-            "İqtisadiyyat və hüquq fakültəsi": [
-                "Hüquqşünaslıq",
-                "İqtisadiyyat",
-                "Maliyyə",
-                "Menecment",
-                "Biznesin idarə edilməsi",
-            ],
-        },
-    },
-    "UNEC": {
-        "domains": ["@unec.edu.az"],
-        "faculties": {
-            "İqtisadiyyat fakültəsi": [
-                "İqtisadiyyat",
-                "Dünya iqtisadiyyatı",
-                "Əmək iqtisadiyyatı və idarəetməsi",
-            ],
-            "Biznesin idarə edilməsi fakültəsi": [
-                "Menecment",
-                "Marketinq",
-                "Biznesin idarə edilməsi",
-                "Layihə menecmenti",
-            ],
-            "Maliyyə fakültəsi": [
-                "Maliyyə",
-                "Bank işi",
-                "Sığorta",
-                "Mühasibat uçotu və audit",
-            ],
-            "Beynəlxalq iqtisadi münasibətlər fakültəsi": [
-                "Beynəlxalq iqtisadi münasibətlər",
-                "Xarici ticarət",
-                "Gömrük işi",
-            ],
-            "İnformasiya texnologiyaları və mühəndislik fakültəsi": [
-                "İnformasiya texnologiyaları",
-                "Kompüter mühəndisliyi",
-                "Proqram mühəndisliyi",
-                "Kibertəhlükəsizlik",
-            ],
-            "Hüquq fakültəsi": [
-                "Hüquqşünaslıq",
-                "Beynəlxalq hüquq",
-            ],
-            "Turizm fakültəsi": [
-                "Turizm",
-                "Otelçilik biznesin idarə edilməsi",
-            ],
-        },
-    },
-}
-
-# Flat map for validation: faculty → majors
 FACULTY_SPECIALIZATIONS = {
-    faculty: majors
-    for uni in UNIVERSITIES.values()
-    for faculty, majors in uni["faculties"].items()
+    "Hava nəqliyyatı fakültəsi": [
+        "Uçuş mühəndisliyi",
+        "Hava nəqliyyatının hərəkətinin təşkili",
+        "Aerokosmik mühəndislik",
+        "Hidrometeorologiya",
+    ],
+    "Nəqliyyat texnologiyaları fakültəsi": [
+        "Logistika və nəqliyyat texnologiyaları mühəndisliyi",
+        "Mexanika mühəndisliyi",
+        "Aviasiya təhlükəsizliyi mühəndisliyi",
+        "Materiallar mühəndisliyi",
+    ],
+    "Aerokosmik fakültə": [
+        "Kompüter mühəndisliyi",
+        "Ekologiya mühəndisliyi",
+        "İnformasiya texnologiyaları",
+    ],
+    "Fizika-Texnologiya fakültəsi": [
+        "Mühəndislik fizikası",
+        "Radiotexnika və telekommunikasiya mühəndisliyi",
+        "Elektrik və elektronika mühəndisliyi",
+        "Cihaz mühəndisliyi",
+        "Energetika mühəndisliyi",
+        "Proseslərin avtomatlaşdırılması mühəndisliyi",
+        "Mexatronika və robototexnika mühəndisliyi",
+    ],
+    "İqtisadiyyat və hüquq fakültəsi": [
+        "Hüquqşünaslıq",
+        "İqtisadiyyat",
+        "Maliyyə",
+        "Menecment",
+        "Biznesin idarə edilməsi",
+    ],
 }
 
 
@@ -140,11 +87,11 @@ def _cleanup_unverified(db: Session):
 @limiter.limit("5/minute")
 def register(request: Request, data: RegisterRequest, db: Session = Depends(get_db)):
     _cleanup_unverified(db)
-    all_domains = [d for uni in UNIVERSITIES.values() for d in uni["domains"]]
-    if not any(data.email.endswith(d) for d in all_domains):
+    ALLOWED_DOMAINS = ("@naa.edu.az", "@student.naa.edu.az", "@unec.edu.az")
+    if not any(data.email.endswith(d) for d in ALLOWED_DOMAINS):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Yalnız universitet email ünvanı ilə qeydiyyat mümkündür"
+            detail="Yalnız @naa.edu.az və ya @student.naa.edu.az email ilə qeydiyyat mümkündür"
         )
 
     if data.faculty not in FACULTY_SPECIALIZATIONS:
@@ -213,10 +160,7 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
 
 @router.get("/faculties")
 def get_faculties():
-    return {
-        uni_name: uni_data["faculties"]
-        for uni_name, uni_data in UNIVERSITIES.items()
-    }
+    return FACULTY_SPECIALIZATIONS
 
 
 @router.post("/login", response_model=TokenResponse)

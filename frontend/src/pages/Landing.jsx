@@ -774,7 +774,7 @@ function RegistrationMockup({ active }) {
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <span style={{ fontSize: 22, fontWeight: 900, background: "linear-gradient(135deg,#38bdf8,#818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Hash</span>
-        <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Qeydiyyat — tələbə</p>
+        <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Qeydiyyat — MAA tələbəsi</p>
       </div>
 
       {/* Name field */}
@@ -796,7 +796,7 @@ function RegistrationMockup({ active }) {
           {eLen === email.length && <span style={{ color: "#22c55e", fontSize: 16 }}>✓</span>}
         </div>
         {eLen === email.length && (
-          <p style={{ fontSize: 10, color: "#22c55e", marginTop: 4 }}>✓ Universitet email təsdiqləndi</p>
+          <p style={{ fontSize: 10, color: "#22c55e", marginTop: 4 }}>✓ MAA email təsdiqləndi</p>
         )}
       </div>
 
@@ -819,7 +819,7 @@ function RegistrationMockup({ active }) {
           style={{ marginTop: 14, padding: "10px 14px", borderRadius: 0,
             background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)",
             fontSize: 11, color: "#86efac", textAlign: "center" }}>
-          📬 Universitet emailinə doğrulama linki göndərildi
+          📬 naa.edu.az emailinə doğrulama linki göndərildi
         </motion.div>
       )}
     </div>
@@ -985,7 +985,7 @@ function NetworkMockup({ active }) {
    ONBOARDING SHOWCASE (scroll-driven)
 ═══════════════════════════════════════ */
 const steps = [
-  { num: "01", title: "Qeydiyyat",       desc: "Universitet emailinlə platformaya qoşul. Email real vaxtda doğrulanır.", tag: "30 saniyə" },
+  { num: "01", title: "Qeydiyyat",       desc: "@naa.edu.az emailinlə platformaya qoşul. Email real vaxtda doğrulanır.", tag: "30 saniyə" },
   { num: "02", title: "Profil yarat",    desc: "İxtisasını, bacarıqlarını və layihələrini əlavə et. Profil kartın avtomatik hazırlanır.", tag: "2 dəqiqə" },
   { num: "03", title: "Şəbəkəyə qoşul", desc: "Həmyaşıdlarınla əlaqə saxla, komanda tap, layihə başlat.", tag: "İndi" },
 ];
@@ -1141,7 +1141,7 @@ const features = [
   { icon: Users,    title: "Tələbə Şəbəkəsi",    desc: "İxtisas və bacarıq filtri ilə düzgün insanı tap, komanda qur.",        gradient: "from-indigo-500 to-violet-600", glow: "rgba(99,102,241,0.18)" },
   { icon: Network,  title: "Professional Bağlantı", desc: "Əlaqə istəyi göndər, peşəkar şəbəkəni genişləndir.",             gradient: "from-blue-500 to-cyan-600",  glow: "rgba(6,182,212,0.18)" },
   { icon: BookOpen, title: "Məqalə Yaz",          desc: "Bilik paylaş, sahənə dair dərin məzmun hazırla.",                    gradient: "from-violet-500 to-purple-600", glow: "rgba(139,92,246,0.18)" },
-  { icon: Shield,   title: "Qapalı Kampus",        desc: "Yalnız universitet emaili ilə giriş — tam güvənli mühit.",           gradient: "from-emerald-500 to-teal-600", glow: "rgba(16,185,129,0.18)" },
+  { icon: Shield,   title: "Qapalı Kampus",        desc: "Yalnız @naa.edu.az emaili ilə giriş — tam güvənli mühit.",           gradient: "from-emerald-500 to-teal-600", glow: "rgba(16,185,129,0.18)" },
 ];
 
 /* ═══════════════════════════════════════
@@ -1226,7 +1226,7 @@ export default function Landing() {
                   style={{ border: "1px solid rgba(56,189,248,0.28)", background: "rgba(56,189,248,0.07)", color: "#7dd3fc", borderRadius: 2 }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-                  MAA · UNEC · Qapalı Platforma
+                  Milli Aviasiya Akademiyası · Qapalı Platforma
                 </motion.div>
 
 
@@ -1237,7 +1237,7 @@ export default function Landing() {
                   className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
                   style={{ color: "#7dd3fc" }}
                 >
-                  Hash — Azərbaycan tələbələri üçün qapalı akademik şəbəkə. Layihə tap,
+                  Hash — MAA tələbələri üçün vahid akademik şəbəkə. Layihə tap,
                   komanda qur, sahənin ən yaxşıları ilə əlaqə saxla.
                 </motion.p>
 
@@ -1364,7 +1364,7 @@ export default function Landing() {
             Akademik karyeranı<br />bu gün inşa et.
           </h2>
           <p className="mb-10 max-w-md mx-auto" style={{ color: "#64748b" }}>
-            MAA və ya UNEC universitet email ünvanınla qeydiyyatdan keç.
+            @naa.edu.az və ya @student.naa.edu.az email ünvanınla qeydiyyatdan keç.
           </p>
           <Link to="/register"
             className="inline-flex items-center gap-2 px-10 py-4 font-semibold transition-all duration-300 hover:scale-105"
