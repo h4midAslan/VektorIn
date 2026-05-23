@@ -99,7 +99,9 @@ export default function Register() {
       <div style={pageWrap}>
         <div style={{ width: "100%", maxWidth: 380 }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <Link to="/" style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", textDecoration: "none" }}>Hash</Link>
+            <Link to="/" style={{ textDecoration: "none", display: "inline-block" }}>
+            <img src="/logo.png" alt="Hash" style={{ height: 56, width: 56, borderRadius: 14 }} />
+          </Link>
             <p style={{ fontSize: 13, color: "#666", marginTop: 4 }}>Email təsdiqi</p>
           </div>
           <div style={card}>
@@ -141,7 +143,9 @@ export default function Register() {
     <div style={pageWrap}>
       <div style={{ width: "100%", maxWidth: 380 }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <Link to="/" style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", textDecoration: "none" }}>Hash</Link>
+          <Link to="/" style={{ textDecoration: "none", display: "inline-block" }}>
+            <img src="/logo.png" alt="Hash" style={{ height: 56, width: 56, borderRadius: 14 }} />
+          </Link>
           <p style={{ fontSize: 13, color: "#666", marginTop: 4 }}>Yeni hesab yarat</p>
         </div>
         <div style={card}>

@@ -33,7 +33,9 @@ export default function Login() {
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f2f2f2", padding: "0 16px" }}>
       <div style={{ width: "100%", maxWidth: 380 }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <Link to="/" style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", textDecoration: "none" }}>Hash</Link>
+          <Link to="/" style={{ textDecoration: "none", display: "inline-block" }}>
+            <img src="/logo.png" alt="Hash" style={{ height: 56, width: 56, borderRadius: 14 }} />
+          </Link>
           <p style={{ fontSize: 13, color: "#666", marginTop: 4 }}>Hesabına daxil ol</p>
         </div>
 
