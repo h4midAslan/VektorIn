@@ -90,12 +90,12 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
     if data.email.endswith("@naa.edu.az"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="@naa.edu.az ilə qeydiyyat bağlıdır. Admin ilə əlaqə saxlayın."
+            detail="@naa.edu.az ilə qeydiyyat bağlıdır. Admin ilə əlaqə saxlayın: +994 50 431 90 40"
         )
     if not data.email.endswith("@student.naa.edu.az"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Yalnız @student.naa.edu.az email ilə qeydiyyat mümkündür"
+            detail="Yalnız @student.naa.edu.az email ilə qeydiyyat mümkündür. Əlaqə: +994 50 431 90 40"
         )
 
     if data.faculty not in FACULTY_SPECIALIZATIONS:
