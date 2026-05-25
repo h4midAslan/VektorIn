@@ -85,7 +85,7 @@ export default function Navbar() {
     api.get("/notifications/unread-count").then(res => setUnreadCount(res.data.count)).catch(() => {});
   };
 
-  const logout = () => { localStorage.removeItem("token"); navigate("/login"); };
+  const logout = () => { sessionStorage.removeItem("token"); navigate("/login"); };
 
   const links = [
     { path: "/feed",        label: t("nav_feed") },

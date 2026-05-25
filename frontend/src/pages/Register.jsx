@@ -68,7 +68,7 @@ export default function Register() {
     setLoading(true);
     try {
       const res = await api.post("/auth/verify-code", { email: pendingEmail, code: fullCode });
-      localStorage.setItem("token", res.data.access_token);
+      sessionStorage.setItem("token", res.data.access_token);
       navigate("/feed");
     } catch (err) {
       setError(err.response?.data?.detail || "Kod yanlışdır");
