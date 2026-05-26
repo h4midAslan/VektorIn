@@ -420,6 +420,81 @@ def admin_create_user(data: AdminCreateUserRequest, db: Session = Depends(get_db
     )
 
 
+# ─── Messages ───
+
+class AdminMessageResponse(BaseModel):
+    id: int
+    sender_id: int
+    sender_name: str
+    receiver_id: int
+    receiver_name: str
+    content: str
+    is_read: bool
+    created_at: str | None
+
+
+@router.get("/messages", response_model=list[AdminMessageResponse])
+def get_all_messages(
+    search: str | None = None,
+    user_id: int | None = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user),
+):
+    query = db.query(Message).order_by(Message.created_at.desc())
+    if user_id is not None:
+        query = query.filter(
+            (Message.sender_id == user_id) | (Message.receiver_id == user_id)
+        )
+    if search:
+        query = query.filter(Message.content.ilike(f"%{search}%"))
+    limit = max(1, min(limit, 500))
+    msgs = query.offset(offset).limit(limit).all()
+    return [
+        AdminMessageResponse(
+            id=m.id,
+            sender_id=m.sender_id,
+            sender_name=m.sender.full_name if m.sender else str(m.sender_id),
+            receiver_id=m.receiver_id,
+            receiver_name=m.receiver.full_name if m.receiver else str(m.receiver_id),
+            content=m.content,
+            is_read=m.is_read,
+            created_at=str(m.created_at) if m.created_at else None,
+        )
+        for m in msgs
+    ]
+
+
+@router.get("/messages/conversation")
+def get_conversation(
+    user1: int,
+    user2: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user),
+):
+    msgs = db.query(Message).filter(
+        ((Message.sender_id == user1) & (Message.receiver_id == user2)) |
+        ((Message.sender_id == user2) & (Message.receiver_id == user1))
+    ).order_by(Message.created_at.asc()).all()
+    u1 = db.query(User).filter(User.id == user1).first()
+    u2 = db.query(User).filter(User.id == user2).first()
+    return {
+        "user1": {"id": user1, "name": u1.full_name if u1 else str(user1)},
+        "user2": {"id": user2, "name": u2.full_name if u2 else str(user2)},
+        "messages": [
+            {
+                "id": m.id,
+                "sender_id": m.sender_id,
+                "content": m.content,
+                "is_read": m.is_read,
+                "created_at": str(m.created_at) if m.created_at else None,
+            }
+            for m in msgs
+        ],
+    }
+
+
 @router.delete("/logs/purge-sensitive")
 def purge_sensitive_logs(db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
     """Mesaj və profil şəkli ilə bağlı köhnə log qeydlərini silir."""

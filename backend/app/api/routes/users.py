@@ -8,6 +8,7 @@ from slowapi.util import get_remote_address
 from app.services.database import get_db
 from app.services.auth import get_current_user, verify_password, hash_password
 from app.models.user import User
+from app.services.activity_logger import log_activity
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 limiter = Limiter(key_func=get_remote_address)
@@ -77,10 +78,12 @@ def update_profile(data: UpdateProfileRequest, db: Session = Depends(get_db), cu
             raise HTTPException(status_code=400, detail="Bu username artıq tutulub")
         fields['username'] = uname
 
+    changed = list(fields.keys())
     for field, value in fields.items():
         setattr(current_user, field, value)
     db.commit()
     db.refresh(current_user)
+    log_activity(db, action="profile_update", user_id=current_user.id, email=current_user.email, details=", ".join(changed))
     return current_user
 
 
@@ -110,6 +113,7 @@ def change_password(request: Request, data: ChangePasswordRequest, db: Session =
         raise HTTPException(status_code=400, detail="Yeni şifrə ən az 6 simvol olmalıdır")
     current_user.password_hash = hash_password(data.new_password)
     db.commit()
+    log_activity(db, action="password_change", user_id=current_user.id, email=current_user.email, request=request)
     return {"message": "Şifrə uğurla dəyişdirildi"}
 
 

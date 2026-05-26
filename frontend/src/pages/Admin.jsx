@@ -41,6 +41,9 @@ export default function Admin() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({ full_name: "", email: "", password: "", faculty: "", major: "", course: "" });
   const [creating, setCreating] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [msgSearch, setMsgSearch] = useState("");
+  const [conversation, setConversation] = useState(null);
 
   useEffect(() => {
     loadStats();
@@ -52,6 +55,7 @@ export default function Admin() {
     if (tab === "logs") loadLogs();
     if (tab === "reports") loadReports();
     if (tab === "online") loadOnline();
+    if (tab === "messages") loadMessages();
   }, [tab]);
 
   const loadOnline = async () => {
@@ -125,6 +129,24 @@ export default function Admin() {
       setLogs(res.data);
     } catch (err) {}
     setLoading(false);
+  };
+
+  const loadMessages = async (search = "") => {
+    setLoading(true);
+    try {
+      const params = { limit: 200 };
+      if (search) params.search = search;
+      const res = await api.get("/admin/messages", { params });
+      setMessages(res.data);
+    } catch (err) {}
+    setLoading(false);
+  };
+
+  const loadConversation = async (user1, user2) => {
+    try {
+      const res = await api.get("/admin/messages/conversation", { params: { user1, user2 } });
+      setConversation(res.data);
+    } catch (err) {}
   };
 
   const verifyUser = async (userId) => {
@@ -210,6 +232,7 @@ export default function Admin() {
     { id: "users", icon: Users, label: "İstifadəçilər" },
     { id: "posts", icon: FileText, label: "Postlar" },
     { id: "reports", icon: Flag, label: "Şikayətlər" },
+    { id: "messages", icon: MessageCircle, label: "Mesajlar" },
     { id: "logs", icon: Activity, label: "Loglar" },
   ];
 
@@ -989,6 +1012,106 @@ export default function Admin() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══════ MESSAGES ═══════ */}
+        {tab === "messages" && (
+          <div>
+            {conversation ? (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                  <button onClick={() => setConversation(null)} style={{ background: "none", border: `1px solid ${C.border}`, padding: "6px 12px", cursor: "pointer", fontSize: 12, color: C.muted }}>
+                    ← Geri
+                  </button>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
+                    {conversation.user1.name} ↔ {conversation.user2.name}
+                  </span>
+                  <span style={{ fontSize: 12, color: C.muted }}>{conversation.messages.length} mesaj</span>
+                </div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: 16, maxHeight: 520, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+                  {conversation.messages.length === 0 && (
+                    <p style={{ textAlign: "center", color: C.muted, fontSize: 13 }}>Mesaj yoxdur</p>
+                  )}
+                  {conversation.messages.map(m => {
+                    const isUser1 = m.sender_id === conversation.user1.id;
+                    return (
+                      <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: isUser1 ? "flex-start" : "flex-end" }}>
+                        <div style={{
+                          maxWidth: "70%", padding: "8px 12px",
+                          background: isUser1 ? (dark ? "#1f2937" : "#f0f0f0") : "#1a4a8a",
+                          color: isUser1 ? C.text : "#fff",
+                          fontSize: 13, lineHeight: 1.5,
+                          borderRadius: 2,
+                        }}>
+                          {m.content}
+                        </div>
+                        <span style={{ fontSize: 10, color: C.faint, marginTop: 2 }}>
+                          {isUser1 ? conversation.user1.name : conversation.user2.name} · {m.created_at ? new Date(m.created_at).toLocaleString("az-AZ") : ""}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+                  <form onSubmit={(e) => { e.preventDefault(); loadMessages(msgSearch); }} style={{ flex: 1, minWidth: 200, display: "flex", gap: 8 }}>
+                    <div style={{ flex: 1, position: "relative" }}>
+                      <Search size={14} color={C.faint} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)" }} />
+                      <input
+                        type="text"
+                        value={msgSearch}
+                        onChange={e => setMsgSearch(e.target.value)}
+                        placeholder="Mesaj mətni ilə axtar..."
+                        style={{ ...inputStyle, paddingLeft: 28 }}
+                      />
+                    </div>
+                    <button type="submit" style={{ padding: "7px 16px", background: C.primary, color: "#fff", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                      Axtar
+                    </button>
+                  </form>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", background: C.white, border: `1px solid ${C.border}`, fontSize: 12, fontWeight: 600, color: C.muted }}>
+                    <MessageCircle size={13} /> {messages.length} mesaj
+                  </span>
+                </div>
+                <div style={{ background: C.white, border: `1px solid ${C.border}` }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 3fr 1.5fr", padding: "8px 16px", background: dark ? "#111827" : "#f5f5f5", borderBottom: `1px solid ${C.border}`, fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <div>Göndərən</div>
+                    <div>Alan</div>
+                    <div>Mesaj</div>
+                    <div>Vaxt</div>
+                  </div>
+                  {loading && <div style={{ textAlign: "center", padding: 40, color: C.muted }}>Yüklənir...</div>}
+                  {!loading && messages.length === 0 && (
+                    <div style={{ textAlign: "center", padding: "48px 0" }}>
+                      <MessageCircle size={28} color={C.faint} style={{ display: "block", margin: "0 auto 10px" }} />
+                      <p style={{ margin: 0, color: C.muted, fontSize: 14 }}>Mesaj tapılmadı</p>
+                    </div>
+                  )}
+                  {!loading && messages.map((m, i) => (
+                    <div key={m.id}
+                      onClick={() => loadConversation(m.sender_id, m.receiver_id)}
+                      style={{
+                        display: "grid", gridTemplateColumns: "2fr 2fr 3fr 1.5fr",
+                        padding: "10px 16px", alignItems: "center", cursor: "pointer",
+                        background: i % 2 === 0 ? (dark ? "#1f2937" : "#fff") : (dark ? "#161d2a" : "#f9f9f9"),
+                        borderBottom: i === messages.length - 1 ? "none" : `1px solid ${C.border}`,
+                        transition: "opacity 0.15s",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
+                      onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.sender_name}</div>
+                      <div style={{ fontSize: 12, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.receiver_name}</div>
+                      <div style={{ fontSize: 12, color: dark ? "#9ca3af" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.content}</div>
+                      <div style={{ fontSize: 11, color: C.faint }}>{m.created_at ? new Date(m.created_at).toLocaleDateString("az-AZ") : "—"}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

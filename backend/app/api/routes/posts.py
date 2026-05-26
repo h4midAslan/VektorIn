@@ -10,6 +10,7 @@ from app.services.notifier import create_notification
 from app.models.user import User
 from app.models.post import Post, PostLike, PostDislike, Comment, PostReport
 from app.config import settings
+from app.services.activity_logger import log_activity
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
@@ -163,6 +164,10 @@ def create_post(data: PostCreate, db: Session = Depends(get_db), current_user: U
     post = Post(author_id=current_user.id, content=content, image_url=stored_image, video_url=data.video_url, show_dislikes=data.show_dislikes)
     db.add(post)
     db.commit()
+    has_image = bool(stored_image)
+    has_video = bool(data.video_url)
+    detail = "şəkil" if has_image else ("video" if has_video else "mətn")
+    log_activity(db, action="post_create", user_id=current_user.id, email=current_user.email, details=detail)
     return {"message": "Post yaradıldı", "id": post.id}
 
 
@@ -223,6 +228,7 @@ def delete_post(post_id: int, db: Session = Depends(get_db), current_user: User 
 
     db.delete(post)
     db.commit()
+    log_activity(db, action="post_delete", user_id=current_user.id, email=current_user.email, details=f"post_id={post_id}")
     return {"message": "Post silindi"}
 
 

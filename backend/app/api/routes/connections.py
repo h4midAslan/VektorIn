@@ -6,6 +6,7 @@ from app.services.auth import get_current_user
 from app.services.notifier import create_notification
 from app.models.user import User
 from app.models.connection import Connection
+from app.services.activity_logger import log_activity
 import random
 
 router = APIRouter(prefix="/api/connections", tags=["connections"])
@@ -30,6 +31,8 @@ def send_request(user_id: int, db: Session = Depends(get_db), current_user: User
     db.add(conn)
     db.commit()
     create_notification(db, user_id=user_id, from_user_id=current_user.id, type="connection_request")
+    target = db.query(User).filter(User.id == user_id).first()
+    log_activity(db, action="connection_request", user_id=current_user.id, email=current_user.email, details=target.full_name if target else str(user_id))
     return {"message": "Bağlantı istəyi göndərildi"}
 
 
@@ -42,6 +45,8 @@ def accept_request(connection_id: int, db: Session = Depends(get_db), current_us
     conn.status = "accepted"
     db.commit()
     create_notification(db, user_id=conn.sender_id, from_user_id=current_user.id, type="connection_accepted")
+    sender = db.query(User).filter(User.id == conn.sender_id).first()
+    log_activity(db, action="connection_accept", user_id=current_user.id, email=current_user.email, details=sender.full_name if sender else str(conn.sender_id))
     return {"message": "Bağlantı qəbul edildi"}
 
 
