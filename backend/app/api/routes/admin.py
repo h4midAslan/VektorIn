@@ -424,6 +424,9 @@ def admin_create_user(data: AdminCreateUserRequest, db: Session = Depends(get_db
 
 # ─── Messages ───
 
+from app.services.encryption import decrypt_msg
+
+
 class AdminMessageResponse(BaseModel):
     id: int
     sender_id: int
@@ -460,7 +463,7 @@ def get_all_messages(
             sender_name=m.sender.full_name if m.sender else str(m.sender_id),
             receiver_id=m.receiver_id,
             receiver_name=m.receiver.full_name if m.receiver else str(m.receiver_id),
-            content=m.content,
+            content=decrypt_msg(m.content),
             is_read=m.is_read,
             created_at=str(m.created_at) if m.created_at else None,
         )
@@ -488,7 +491,7 @@ def get_conversation(
             {
                 "id": m.id,
                 "sender_id": m.sender_id,
-                "content": m.content,
+                "content": decrypt_msg(m.content),
                 "is_read": m.is_read,
                 "created_at": str(m.created_at) if m.created_at else None,
             }
