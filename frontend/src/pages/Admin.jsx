@@ -232,7 +232,7 @@ export default function Admin() {
     { id: "users", icon: Users, label: "İstifadəçilər" },
     { id: "posts", icon: FileText, label: "Postlar" },
     { id: "reports", icon: Flag, label: "Şikayətlər" },
-    { id: "messages", icon: MessageCircle, label: "Mesajlar" },
+    // { id: "messages", icon: MessageCircle, label: "Mesajlar" },
     { id: "logs", icon: Activity, label: "Loglar" },
   ];
 
