@@ -15,7 +15,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { email, password });
-      sessionStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("token", res.data.access_token);
       navigate("/feed");
     } catch (err) {
       setError(err.response?.data?.detail || "Giriş uğursuz oldu");

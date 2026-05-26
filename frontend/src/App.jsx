@@ -66,7 +66,7 @@ function useDarkMode() {
 }
 
 function PrivateRoute({ children }) {
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const bg = useBackgroundTheme();
   const dark = useDarkMode();
   if (!token) return <Navigate to="/login" />;
@@ -85,7 +85,7 @@ function PrivateRoute({ children }) {
 }
 
 function AdminRoute({ children }) {
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const [allowed, setAllowed] = useState(null);
   const bg = useBackgroundTheme();
   const dark = useDarkMode();

@@ -57,7 +57,7 @@ export default function Messages() {
 
   // ── WebSocket ──────────────────────────────────────────────────
   const connectWs = useCallback(() => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     if (wsRef.current) {
