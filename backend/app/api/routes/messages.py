@@ -133,6 +133,9 @@ async def send_message(
     db.commit()
     db.refresh(msg)
 
+    from app.services.notifier import create_notification
+    create_notification(db, user_id=user_id, from_user_id=current_user.id, type="message")
+
     push_base = {
         "type": "message",
         "id": msg.id,
