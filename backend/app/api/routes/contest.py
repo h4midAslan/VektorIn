@@ -1,12 +1,24 @@
 from datetime import datetime, timezone
-import time
+import time, json
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func, outerjoin, select
+from sqlalchemy import func
 from app.services.database import get_db
 from app.models.post import Post, PostLike, Comment
 from app.models.user import User
 from app.models.contest import Contest
+
+
+def _first_image(image_url: str | None) -> str | None:
+    if not image_url:
+        return None
+    if image_url.startswith("["):
+        try:
+            imgs = json.loads(image_url)
+            return imgs[0] if imgs else None
+        except Exception:
+            pass
+    return image_url
 
 router = APIRouter(prefix="/api/contest", tags=["contest"])
 
@@ -92,7 +104,7 @@ def get_leaderboard(db: Session = Depends(get_db)):
         .join(User, User.id == Post.author_id)
         .outerjoin(like_subq, like_subq.c.post_id == Post.id)
         .outerjoin(comment_subq, comment_subq.c.post_id == Post.id)
-        .filter(Post.image_url.isnot(None))
+        .filter(Post.image_url.isnot(None), Post.image_url != "")
     )
     for tag in tag_filters:
         query = query.filter(Post.content.ilike(f"%#{tag}%"))
@@ -104,7 +116,7 @@ def get_leaderboard(db: Session = Depends(get_db)):
         score = like_count + comment_count
         results.append({
             "post_id": post.id,
-            "image_url": post.image_url,
+            "image_url": _first_image(post.image_url),
             "content": post.content,
             "like_count": like_count,
             "comment_count": comment_count,
