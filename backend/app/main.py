@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from app.api.routes import auth, users, posts, connections, messages, admin, certificates, upload, projects, events, articles, notifications, hackathons
 from app.api.routes import feedback as feedback_router
 from app.api.routes import push as push_router
+from app.api.routes import contest as contest_router
 from alembic.config import Config
 from alembic import command
 
@@ -109,6 +110,7 @@ app.include_router(notifications.router)
 app.include_router(hackathons.router)
 app.include_router(feedback_router.router)
 app.include_router(push_router.router)
+app.include_router(contest_router.router)
 
 
 @app.exception_handler(Exception)

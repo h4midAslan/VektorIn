@@ -92,6 +92,7 @@ export default function Navbar() {
     { path: "/search",      label: t("nav_search") },
     { path: "/connections", label: t("nav_connections") },
     { path: "/messages",    label: t("nav_messages") },
+    { path: "/contest",     label: "🏆 Müsabiqə" },
     { path: "/profile",     label: t("nav_profile") },
     { path: "/settings",    label: t("nav_settings") },
     ...(currentUser?.is_admin ? [{ path: "/admin", label: t("nav_admin"), admin: true }] : []),
