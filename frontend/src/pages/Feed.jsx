@@ -84,6 +84,8 @@ export default function Feed() {
   const [pendingIds, setPendingIds] = useState(new Set());
   const [suggested, setSuggested] = useState([]);
   const [suggestedPending, setSuggestedPending] = useState(new Set());
+  const [contestBoard, setContestBoard] = useState([]);
+  const [contestInfo, setContestInfo] = useState(null);
   const { t } = useLang();
   const isMobile = useIsMobile();
   const dark = useDarkMode();
@@ -94,6 +96,8 @@ export default function Feed() {
     loadUser();
     loadConnections();
     api.get("/connections/suggested").then(r => setSuggested(r.data)).catch(() => {});
+    api.get("/contest/info").then(r => { if (r.data.active) setContestInfo(r.data); }).catch(() => {});
+    api.get("/contest/leaderboard").then(r => setContestBoard(r.data.slice(0, 3))).catch(() => {});
   }, []);
 
   const loadConnections = async () => {
@@ -502,9 +506,49 @@ export default function Feed() {
       )}
     </div>
 
+    {/* Sidebar */}
+    {(suggested.length > 0 || contestInfo) && (
+      <div style={{ width: 240, flexShrink: 0, position: "sticky", top: 68, display: isMobile ? "none" : "flex", flexDirection: "column", gap: 12 }}>
+
+    {/* Contest widget */}
+    {contestInfo && (
+      <div style={{ background: C.sidebarBg, border: C.border, padding: "14px 16px" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: "#1a4a8a", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 10px", display: "flex", alignItems: "center", gap: 5 }}>
+          🏆 Müsabiqə — {contestInfo.prize}
+        </p>
+        {contestBoard.length === 0 ? (
+          <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>Hələ iştirakçı yoxdur. İlk sən ol!</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {contestBoard.map(entry => (
+              <div key={entry.post_id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 14, flexShrink: 0 }}>
+                  {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : "🥉"}
+                </span>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "#1a4a8a", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700 }}>
+                  {entry.author.profile_picture
+                    ? <img src={entry.author.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : entry.author.full_name?.charAt(0)}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.author.full_name}</div>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#e11d48", display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+                  <Heart size={11} fill="#e11d48" /> {entry.like_count}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <p style={{ fontSize: 11, color: C.muted, margin: "10px 0 0" }}>
+          #{contestInfo.tags?.[0]?.replace("#","")} etiketini əlavə et
+        </p>
+      </div>
+    )}
+
     {/* Suggested Profiles sidebar */}
     {suggested.length > 0 && (
-      <div style={{ width: 240, flexShrink: 0, position: "sticky", top: 68, display: isMobile ? "none" : "block" }}>
+      <div>
         <div style={{ background: C.sidebarBg, border: C.border, padding: "14px 16px" }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" }}>
             Tanıya bilərsən
@@ -542,6 +586,8 @@ export default function Feed() {
             })}
           </div>
         </div>
+      </div>
+    )}
       </div>
     )}
     </div>
