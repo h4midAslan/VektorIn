@@ -16,6 +16,7 @@ from app.models.notification import Notification
 from app.models.article import Article, ArticleLike, ArticleComment
 from app.models.event import Event
 from app.models.feedback import Feedback
+from app.models.contest import Contest
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -69,6 +70,13 @@ class AdminPostResponse(BaseModel):
 class EmailNotifyRequest(BaseModel):
     subject: str
     message: str
+
+
+class ContestRequest(BaseModel):
+    title: str
+    prize: str
+    deadline: str
+    tags: str = "#AviasiyaAkademiyası,#HashCampus"
 
 
 # ─── Stats ───
@@ -578,3 +586,40 @@ def send_email_notification(
 
     background_tasks.add_task(send_notification_email, emails, data.subject, html, data.message)
     return {"message": f"{len(emails)} istifadəçiyə göndərilir...", "total": len(emails)}
+
+
+# ─── Contest ───
+
+@router.get("/contest")
+def get_contest(db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    c = db.query(Contest).order_by(Contest.created_at.desc()).first()
+    if not c:
+        return None
+    return {
+        "id": c.id,
+        "title": c.title,
+        "prize": c.prize,
+        "deadline": str(c.deadline),
+        "tags": c.tags,
+        "is_active": c.is_active,
+    }
+
+
+@router.post("/contest")
+def create_contest(data: ContestRequest, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    db.query(Contest).update({"is_active": False})
+    deadline = datetime.fromisoformat(data.deadline.replace("Z", "+00:00"))
+    c = Contest(title=data.title, prize=data.prize, deadline=deadline, tags=data.tags, is_active=True)
+    db.add(c)
+    db.commit()
+    return {"message": "Müsabiqə başladıldı"}
+
+
+@router.patch("/contest/{contest_id}/stop")
+def stop_contest(contest_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    c = db.query(Contest).filter(Contest.id == contest_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Tapılmadı")
+    c.is_active = False
+    db.commit()
+    return {"message": "Müsabiqə dayandırıldı"}

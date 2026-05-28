@@ -48,6 +48,9 @@ export default function Admin() {
   const [notifSubject, setNotifSubject] = useState("");
   const [notifMessage, setNotifMessage] = useState("");
   const [notifSending, setNotifSending] = useState(false);
+  const [contest, setContest] = useState(null);
+  const [contestForm, setContestForm] = useState({ title: "Aviasiya Akademiyası Foto Müsabiqəsi", prize: "50 AZN", deadline: "", tags: "#AviasiyaAkademiyası,#HashCampus" });
+  const [contestSaving, setContestSaving] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -62,7 +65,12 @@ export default function Admin() {
     if (tab === "messages") loadMessages();
     if (tab === "feedback") loadFeedbacks();
     if (tab === "notify") { setNotifSubject(""); setNotifMessage(""); }
+    if (tab === "contest") loadContest();
   }, [tab]);
+
+  const loadContest = async () => {
+    try { const r = await api.get("/admin/contest"); setContest(r.data); } catch {}
+  };
 
   const loadOnline = async () => {
     try {
@@ -257,6 +265,7 @@ export default function Admin() {
     // { id: "messages", icon: MessageCircle, label: "Mesajlar" },
     { id: "feedback", icon: MessageCircle, label: "Rəylər" },
     { id: "notify", icon: Mail, label: "Bildiriş" },
+    { id: "contest", icon: TrendingUp, label: "Müsabiqə" },
     { id: "logs", icon: Activity, label: "Loglar" },
   ];
 
@@ -1275,6 +1284,75 @@ export default function Admin() {
             <p style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>
               Yalnız təsdiqlənmiş və aktiv hesablara göndərilir.
             </p>
+          </div>
+        )}
+
+        {/* ═══════ CONTEST ═══════ */}
+        {tab === "contest" && (
+          <div style={{ maxWidth: 560 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 6 }}>Müsabiqə idarəetməsi</h3>
+
+            {/* Mövcud müsabiqə */}
+            {contest && (
+              <div style={{ background: contest.is_active ? (dark ? "#052e16" : "#f0fdf4") : (dark ? "#1f2937" : "#f9fafb"), border: `1px solid ${contest.is_active ? "#16a34a" : C.border}`, borderRadius: 8, padding: "14px 16px", marginBottom: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: contest.is_active ? C.success : C.muted }}>
+                    {contest.is_active ? "🟢 Aktiv müsabiqə" : "⚫ Dayandırılmış"}
+                  </span>
+                  {contest.is_active && (
+                    <button onClick={async () => {
+                      if (!confirm("Müsabiqəni dayandırmaq istəyirsiniz?")) return;
+                      try { await api.patch(`/admin/contest/${contest.id}/stop`); toast.success("Dayandırıldı"); loadContest(); } catch { toast.error("Xəta"); }
+                    }} style={{ background: C.danger, color: "#fff", border: "none", padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", borderRadius: 4 }}>
+                      Dayandır
+                    </button>
+                  )}
+                </div>
+                <div style={{ fontSize: 13, color: C.text, marginBottom: 4 }}><b>{contest.title}</b></div>
+                <div style={{ fontSize: 12, color: C.muted }}>Mükafat: <b>{contest.prize}</b></div>
+                <div style={{ fontSize: 12, color: C.muted }}>Deadline: <b>{new Date(contest.deadline).toLocaleString("az-AZ")}</b></div>
+                <div style={{ fontSize: 12, color: C.muted }}>Etiketlər: {contest.tags}</div>
+              </div>
+            )}
+
+            {/* Yeni müsabiqə formu */}
+            <h4 style={{ fontSize: 13, fontWeight: 700, color: C.text, margin: "0 0 14px" }}>
+              {contest?.is_active ? "Yeni müsabiqə başlat (mövcudu dayandıracaq)" : "Müsabiqə başlat"}
+            </h4>
+
+            {[
+              { label: "Başlıq", key: "title", placeholder: "Aviasiya Akademiyası Foto Müsabiqəsi" },
+              { label: "Mükafat", key: "prize", placeholder: "50 AZN" },
+              { label: "Etiketlər (vergüllə)", key: "tags", placeholder: "#AviasiyaAkademiyası,#HashCampus" },
+            ].map(({ label, key, placeholder }) => (
+              <div key={key} style={{ marginBottom: 12 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 5 }}>{label}</label>
+                <input value={contestForm[key]} onChange={e => setContestForm(f => ({ ...f, [key]: e.target.value }))}
+                  placeholder={placeholder}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "9px 12px", fontSize: 13, border: `1px solid ${C.border}`, background: C.white, color: C.text, outline: "none" }} />
+              </div>
+            ))}
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 5 }}>Bitmə tarixi</label>
+              <input type="datetime-local" value={contestForm.deadline} onChange={e => setContestForm(f => ({ ...f, deadline: e.target.value }))}
+                style={{ width: "100%", boxSizing: "border-box", padding: "9px 12px", fontSize: 13, border: `1px solid ${C.border}`, background: C.white, color: C.text, outline: "none" }} />
+            </div>
+
+            <button onClick={async () => {
+              if (!contestForm.title || !contestForm.prize || !contestForm.deadline) { toast.error("Bütün sahələri doldurun"); return; }
+              setContestSaving(true);
+              try {
+                const deadline = new Date(contestForm.deadline).toISOString();
+                await api.post("/admin/contest", { ...contestForm, deadline });
+                toast.success("Müsabiqə başladıldı!");
+                loadContest();
+              } catch { toast.error("Xəta baş verdi"); }
+              finally { setContestSaving(false); }
+            }} disabled={contestSaving}
+              style={{ padding: "10px 28px", background: C.primary, color: "#fff", border: "none", fontSize: 14, fontWeight: 600, cursor: contestSaving ? "not-allowed" : "pointer", opacity: contestSaving ? 0.6 : 1 }}>
+              {contestSaving ? "Saxlanır..." : "🏆 Başlat"}
+            </button>
           </div>
         )}
 

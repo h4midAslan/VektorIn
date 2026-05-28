@@ -29,6 +29,7 @@ def ensure_tables():
     import app.models.hackathon
     import app.models.feedback
     import app.models.push_subscription
+    import app.models.contest
     try:
         Base.metadata.create_all(bind=engine, checkfirst=True)
         print("ensure_tables: OK")

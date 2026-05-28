@@ -1,53 +1,53 @@
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.services.database import get_db
-from app.services.auth import get_current_user
 from app.models.post import Post, PostLike
 from app.models.user import User
-from app.config import settings
+from app.models.contest import Contest
 
 router = APIRouter(prefix="/api/contest", tags=["contest"])
 
-CONTEST_TAGS = ["#aviasiyaakademiyası", "#hashcampus"]
-CONTEST_DEADLINE = datetime(2026, 6, 4, 23, 59, 59, tzinfo=timezone.utc)
-CONTEST_PRIZE = "50 AZN"
-CONTEST_TITLE = "Aviasiya Akademiyası Foto Müsabiqəsi"
 
-
-def _matches_contest(content: str) -> bool:
-    if not content:
-        return False
-    lower = content.lower()
-    return all(tag in lower for tag in CONTEST_TAGS)
+def _active_contest(db: Session):
+    return db.query(Contest).filter(Contest.is_active == True).order_by(Contest.created_at.desc()).first()
 
 
 @router.get("/info")
-def get_contest_info():
+def get_contest_info(db: Session = Depends(get_db)):
+    c = _active_contest(db)
+    if not c:
+        return {"active": False}
     now = datetime.now(timezone.utc)
-    remaining = max(0, int((CONTEST_DEADLINE - now).total_seconds()))
+    deadline = c.deadline if c.deadline.tzinfo else c.deadline.replace(tzinfo=timezone.utc)
+    remaining = max(0, int((deadline - now).total_seconds()))
+    if remaining == 0:
+        c.is_active = False
+        db.commit()
+        return {"active": False}
     return {
-        "title": CONTEST_TITLE,
-        "prize": CONTEST_PRIZE,
-        "deadline": CONTEST_DEADLINE.isoformat(),
+        "id": c.id,
+        "title": c.title,
+        "prize": c.prize,
+        "deadline": deadline.isoformat(),
         "remaining_seconds": remaining,
-        "active": remaining > 0,
-        "tags": ["#AviasiyaAkademiyası", "#HashCampus"],
+        "active": True,
+        "tags": [t.strip() for t in c.tags.split(",")],
     }
 
 
 @router.get("/leaderboard")
 def get_leaderboard(db: Session = Depends(get_db)):
-    posts = (
-        db.query(Post)
-        .filter(
-            Post.image_url.isnot(None),
-            Post.content.ilike("%#aviasiyaakademiyası%"),
-            Post.content.ilike("%#hashcampus%"),
-        )
-        .all()
-    )
+    c = _active_contest(db)
+    if not c:
+        return []
+    tag_filters = [t.strip().lstrip("#").lower() for t in c.tags.split(",")]
+
+    query = db.query(Post).filter(Post.image_url.isnot(None))
+    for tag in tag_filters:
+        query = query.filter(Post.content.ilike(f"%#{tag}%"))
+    posts = query.all()
 
     results = []
     for post in posts:
@@ -72,5 +72,4 @@ def get_leaderboard(db: Session = Depends(get_db)):
     results.sort(key=lambda x: x["like_count"], reverse=True)
     for i, r in enumerate(results):
         r["rank"] = i + 1
-
     return results
