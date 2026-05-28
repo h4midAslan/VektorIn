@@ -52,7 +52,7 @@ def get_leaderboard(db: Session = Depends(get_db)):
     results = []
     for post in posts:
         like_count = db.query(func.count(PostLike.id)).filter(PostLike.post_id == post.id).scalar()
-        comment_count = db.query(func.count(Comment.id)).filter(Comment.post_id == post.id).scalar()
+        comment_count = db.query(func.count(func.distinct(Comment.user_id))).filter(Comment.post_id == post.id).scalar()
         score = like_count + comment_count
         author = db.query(User).filter(User.id == post.author_id).first()
         if not author:
