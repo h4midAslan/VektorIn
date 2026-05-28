@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.services.database import get_db
-from app.models.post import Post, PostLike
+from app.models.post import Post, PostLike, Comment
 from app.models.user import User
 from app.models.contest import Contest
 
@@ -52,6 +52,8 @@ def get_leaderboard(db: Session = Depends(get_db)):
     results = []
     for post in posts:
         like_count = db.query(func.count(PostLike.id)).filter(PostLike.post_id == post.id).scalar()
+        comment_count = db.query(func.count(Comment.id)).filter(Comment.post_id == post.id).scalar()
+        score = like_count + comment_count
         author = db.query(User).filter(User.id == post.author_id).first()
         if not author:
             continue
@@ -60,6 +62,8 @@ def get_leaderboard(db: Session = Depends(get_db)):
             "image_url": post.image_url,
             "content": post.content,
             "like_count": like_count,
+            "comment_count": comment_count,
+            "score": score,
             "created_at": str(post.created_at),
             "author": {
                 "id": author.id,
@@ -69,7 +73,7 @@ def get_leaderboard(db: Session = Depends(get_db)):
             },
         })
 
-    results.sort(key=lambda x: x["like_count"], reverse=True)
+    results.sort(key=lambda x: x["score"], reverse=True)
     for i, r in enumerate(results):
         r["rank"] = i + 1
     return results

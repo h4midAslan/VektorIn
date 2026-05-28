@@ -590,17 +590,21 @@ export default function Feed() {
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 11, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.author.full_name}</div>
-                        <div style={{ fontSize: 11, color: "#e11d48", display: "flex", alignItems: "center", gap: 2, fontWeight: 700 }}>
-                          <Heart size={10} fill="#e11d48" /> {entry.like_count}
+                        <div style={{ fontSize: 11, color: C.muted, display: "flex", alignItems: "center", gap: 6, fontWeight: 600 }}>
+                          <span style={{ color: "#e11d48", display: "flex", alignItems: "center", gap: 2 }}><Heart size={10} fill="#e11d48" /> {entry.like_count}</span>
+                          <span style={{ display: "flex", alignItems: "center", gap: 2 }}>💬 {entry.comment_count ?? 0}</span>
+                          <span style={{ color: "#7c3aed", fontWeight: 700 }}>= {entry.score ?? entry.like_count}</span>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-              <p style={{ fontSize: 10, color: C.muted, margin: "8px 0 0" }}>
-                #AviasiyaAkademiyası #HashCampus
-              </p>
+              {contestInfo?.tags && (
+                <p style={{ fontSize: 10, color: C.muted, margin: "8px 0 0" }}>
+                  {contestInfo.tags.map(t => `#${t}`).join(" ")}
+                </p>
+              )}
             </div>
           );
         })()}
