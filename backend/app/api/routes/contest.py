@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.services.database import get_db
-from app.services.auth import get_current_user, optional_current_user
+from app.services.auth import get_current_user
 from app.models.post import Post, PostLike
 from app.models.user import User
 from app.config import settings
