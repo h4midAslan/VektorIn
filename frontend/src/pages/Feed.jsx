@@ -586,7 +586,7 @@ export default function Feed() {
                         {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : entry.rank === 3 ? "🥉" : `${entry.rank}.`}
                       </span>
                       {entry.image_url && (
-                        <img src={entry.image_url} alt="" style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 4, flexShrink: 0 }} />
+                        <img src={entry.image_url} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)" }} />
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 11, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.author.full_name}</div>
@@ -602,7 +602,7 @@ export default function Feed() {
               )}
               {contestInfo?.tags && (
                 <p style={{ fontSize: 10, color: C.muted, margin: "8px 0 0" }}>
-                  {contestInfo.tags.map(t => `#${t}`).join(" ")}
+                  {contestInfo.tags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}
                 </p>
               )}
             </div>
