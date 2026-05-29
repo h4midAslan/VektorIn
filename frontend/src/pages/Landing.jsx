@@ -476,10 +476,6 @@ export default function Landing() {
                 <div className="lab">Tələbə</div>
               </div>
               <div className="hl-stat">
-                <div className="num" data-count="4"><span className="v">0</span></div>
-                <div className="lab">Universitet</div>
-              </div>
-              <div className="hl-stat">
                 <div className="num" data-count="1"><span className="v">0</span></div>
                 <div className="lab">Şəbəkə</div>
               </div>
