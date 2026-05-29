@@ -238,8 +238,9 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
 def get_faculties(email: str = ""):
     if email:
         uni = _get_university_from_email(email)
-        if uni:
-            return uni["faculties"]
+        if not uni:
+            return {}
+        return {"university_name": uni["name"], "faculties": uni["faculties"]}
     return FACULTY_SPECIALIZATIONS
 
 

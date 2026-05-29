@@ -28,19 +28,13 @@ export default function Register() {
     try {
       const res = await api.get(`/auth/faculties?email=${encodeURIComponent(email)}`);
       const data = res.data;
-      if (Object.keys(data).length === 0) {
+      if (!data || Object.keys(data).length === 0) {
         setDetectedUni("invalid");
         setFaculties({});
         setForm(f => ({ ...f, faculty: "", major: "" }));
       } else {
-        // Get university name from backend or derive from domain
-        const domain = match[1].toLowerCase();
-        const uniNames = {
-          "student.naa.edu.az": "Milli Aviasiya Akademiyası",
-          "unec.edu.az": "UNEC",
-        };
-        setDetectedUni({ name: uniNames[domain] || domain });
-        setFaculties(data);
+        setDetectedUni({ name: data.university_name });
+        setFaculties(data.faculties);
         setForm(f => ({ ...f, faculty: "", major: "" }));
       }
     } catch {
