@@ -166,14 +166,6 @@ export default function Navbar() {
 
         {/* Mobile right */}
         <div className="md:hidden" style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
-          <a
-            href="https://www.instagram.com/hashcampus_official/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: "flex", alignItems: "center", padding: "0 6px", lineHeight: "46px", color: dark ? "#d1d5db" : "#666" }}
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
-          </a>
           <div style={{ position: "relative" }}>
             <button onClick={() => { setShowNotifs(v => !v); setUnreadCount(0); }} style={{ background: "none", border: "none", cursor: "pointer", padding: "0 8px", lineHeight: "46px", color: "#555", position: "relative" }}>
               <Bell size={17} />
@@ -207,6 +199,16 @@ export default function Navbar() {
               </Link>
             );
           })}
+          <a
+            href="https://www.instagram.com/hashcampus_official/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setMobileOpen(false)}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", fontSize: 13, color: dark ? "#d1d5db" : "#666", textDecoration: "none", borderLeft: "3px solid transparent" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+            Instagram
+          </a>
           <button
             onClick={() => { setMobileOpen(false); logout(); }}
             style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 20px", fontSize: 13, color: "#888", background: "none", border: "none", cursor: "pointer", borderLeft: "3px solid transparent" }}
