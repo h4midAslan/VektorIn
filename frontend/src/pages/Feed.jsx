@@ -478,7 +478,6 @@ export default function Feed() {
   const [feedTab, setFeedTab] = useState("foryou");
   const [mobileComposer, setMobileComposer] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [myConnections, setMyConnections] = useState([]);
 
   const composerRef = useRef(null);
   const touchStartX = useRef(null);
@@ -514,7 +513,6 @@ export default function Feed() {
       const [myRes, pendRes] = await Promise.all([api.get("/connections/my"), api.get("/connections/sent")]);
       setConnectedIds(new Set(myRes.data.map(c => c.user_id)));
       setPendingIds(new Set(pendRes.data.map(c => c.receiver_id)));
-      setMyConnections(myRes.data);
     } catch {}
   };
 
@@ -1023,64 +1021,6 @@ export default function Feed() {
                 style={{ width: "100%", padding: "10px 14px 10px 36px", borderRadius: 12, border: C.border, background: C.surface, color: C.text, fontFamily: "'Archivo', sans-serif", fontSize: 14, outline: "none", cursor: "pointer", boxSizing: "border-box" }}
               />
             </div>
-
-            {/* Mini profile card */}
-            {user && (
-              <Panel C={C}>
-                {/* Banner strip */}
-                <div style={{ height: 52, background: C.accentWash, borderRadius: "14px 14px 0 0", position: "relative" }}>
-                  <div style={{ position: "absolute", inset: 0, borderRadius: "14px 14px 0 0", background: "repeating-linear-gradient(135deg, rgba(30,144,255,0.05) 0 16px, transparent 16px 32px)" }} />
-                </div>
-                <div style={{ padding: "0 16px 16px", marginTop: -28 }}>
-                  <Link to="/profile" style={{ display: "block", width: 56, height: 56, borderRadius: "50%", border: `3px solid ${C.surface}`, overflow: "hidden", background: C.surface, marginBottom: 8, flexShrink: 0 }}>
-                    <UserAvatar user={user} size="lg" />
-                  </Link>
-                  <Link to="/profile" style={{ display: "block", fontWeight: 900, fontSize: 15, color: C.text, textDecoration: "none", fontFamily: "'Archivo', sans-serif", marginBottom: 2, lineHeight: 1.2 }}>
-                    {user.full_name}
-                  </Link>
-                  {user.headline && (
-                    <p style={{ margin: "0 0 8px", fontSize: 12.5, color: C.muted, lineHeight: 1.4 }}>{user.headline}</p>
-                  )}
-                  <Link to="/connections" style={{ display: "inline-flex", alignItems: "center", gap: 4, textDecoration: "none", marginBottom: myConnections.length > 0 ? 12 : 0 }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: ACCENT, fontFamily: "'Archivo', sans-serif" }}>
-                      {myConnections.length >= 500 ? "500+" : myConnections.length}
-                    </span>
-                    <span style={{ fontSize: 13.5, color: C.muted, fontWeight: 600 }}>bağlantı</span>
-                  </Link>
-
-                  {/* Connection avatars */}
-                  {myConnections.length > 0 && (
-                    <div>
-                      <p style={{ margin: "0 0 8px", fontSize: 12, color: C.muted, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em", textTransform: "uppercase" }}>Bağlantılar</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                        {myConnections.slice(0, 6).map(c => (
-                          <Link key={c.user_id} to={`/profile/${c.user_id}`} title={c.full_name}
-                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, textDecoration: "none", width: 44 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", background: C.surface, border: `2px solid ${C.divider}`, flexShrink: 0 }}>
-                              {c.profile_picture
-                                ? <img src={c.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: ACCENT, color: "#fff", fontWeight: 800, fontSize: 15, fontFamily: "'Archivo', sans-serif" }}>{c.full_name?.charAt(0)}</div>
-                              }
-                            </div>
-                            <span style={{ fontSize: 10.5, color: C.muted, textAlign: "center", lineHeight: 1.2, maxWidth: 44, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>
-                              {c.full_name?.split(" ")[0]}
-                            </span>
-                          </Link>
-                        ))}
-                        {myConnections.length > 6 && (
-                          <Link to="/connections" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, textDecoration: "none", width: 44 }}>
-                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: C.accentWash, border: `2px solid ${C.divider}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <span style={{ fontSize: 12, fontWeight: 800, color: ACCENT }}>+{myConnections.length - 6}</span>
-                            </div>
-                            <span style={{ fontSize: 10.5, color: C.muted }}>daha çox</span>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </Panel>
-            )}
 
             {suggested.length > 0 && (
               <Panel C={C}>
