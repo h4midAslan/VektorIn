@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
+import FeedbackModal from "../components/FeedbackButton";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
@@ -174,6 +175,7 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
   ];
 
   const [themeHover, setThemeHover] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
     <div style={{
@@ -230,6 +232,23 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
           {dark ? "Açıq tema" : "Qaranlıq tema"}
         </button>
 
+        <button
+          onClick={() => setFeedbackOpen(true)}
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "10px 14px", borderRadius: 12,
+            background: "transparent", border: "none",
+            color: C.muted, cursor: "pointer",
+            fontFamily: "'Archivo', sans-serif", fontSize: 14.5, fontWeight: 600,
+            width: "100%", textAlign: "left", transition: "background .12s, color .12s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = C.navHover; e.currentTarget.style.color = C.text; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.muted; }}
+        >
+          <MessageSquare size={19} />
+          Rəy və Təklif
+        </button>
+
         {user && (
           <Link to="/profile" style={{
             display: "flex", alignItems: "center", gap: 10,
@@ -249,6 +268,8 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
         )}
 
       </div>
+
+      <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </div>
   );
 }

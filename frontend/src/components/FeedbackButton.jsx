@@ -1,15 +1,33 @@
 import { useState } from "react";
-import { MessageSquare, X } from "lucide-react";
+import { MessageSquare, X, Send } from "lucide-react";
 import api from "../api/client";
 import { toast } from "./Toast";
 import { useDarkMode } from "../hooks/useTheme";
 
-export default function FeedbackButton() {
+const ACCENT = "#1E90FF";
+
+const CATEGORIES = [
+  { val: "idea", label: "Təklif" },
+  { val: "bug",  label: "Xəta"   },
+  { val: "other",label: "Digər"  },
+];
+
+export default function FeedbackModal({ open, onClose }) {
   const dark = useDarkMode();
-  const [open, setOpen] = useState(false);
   const [cat, setCat] = useState("idea");
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+
+  if (!open) return null;
+
+  const C = {
+    bg:      dark ? "#0a1c39" : "#ffffff",
+    border:  dark ? "#1a2b49" : "#e4e9f1",
+    text:    dark ? "#ffffff" : "#071428",
+    muted:   dark ? "#7d8ba3" : "#69768d",
+    input:   dark ? "#071428" : "#f5f7fb",
+    overlay: "rgba(0,0,0,0.55)",
+  };
 
   const send = async () => {
     if (!text.trim()) return;
@@ -17,8 +35,7 @@ export default function FeedbackButton() {
     try {
       await api.post("/feedback", { content: text.trim(), category: cat });
       toast.success("Rəyiniz göndərildi, təşəkkür edirik!");
-      setText("");
-      setOpen(false);
+      setText(""); setCat("idea"); onClose();
     } catch {
       toast.error("Göndərilmədi, yenidən cəhd edin");
     } finally {
@@ -27,95 +44,121 @@ export default function FeedbackButton() {
   };
 
   return (
-    <>
-      {/* Floating button */}
-      <button
-        onClick={() => setOpen(true)}
-        title="Rəy və təklif"
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 1200,
+        background: C.overlay,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
         style={{
-          position: "fixed", bottom: 24, right: 24, zIndex: 900,
-          width: 48, height: 48, borderRadius: "50%",
-          background: "#1a4a8a", color: "#fff", border: "none",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer", boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+          width: "100%", maxWidth: 400,
+          background: C.bg,
+          border: `1px solid ${C.border}`,
+          borderRadius: 20,
+          boxShadow: "0 24px 64px rgba(0,0,0,0.35)",
+          overflow: "hidden",
         }}
       >
-        <MessageSquare size={20} />
-      </button>
-
-      {/* Modal */}
-      {open && (
+        {/* Header */}
         <div style={{
-          position: "fixed", inset: 0, zIndex: 1000,
-          display: "flex", alignItems: "flex-end", justifyContent: "flex-end",
-          padding: 24, pointerEvents: "none",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "18px 22px 14px",
+          borderBottom: `1px solid ${C.border}`,
         }}>
-          <div style={{
-            width: 320, pointerEvents: "auto",
-            background: dark ? "#1f2937" : "#fff",
-            border: dark ? "1px solid #374151" : "1px solid #d4d4d4",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-            marginBottom: 64,
-          }}>
-            {/* Header */}
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "12px 16px",
-              borderBottom: dark ? "1px solid #374151" : "1px solid #e5e5e5",
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <MessageSquare size={16} color={ACCENT} />
+            <span style={{
+              fontSize: 14, fontWeight: 800, color: C.text,
+              fontFamily: "'Archivo', sans-serif",
             }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: dark ? "#f3f4f6" : "#1a1a1a" }}>
-                💬 Rəy və təklif
-              </span>
-              <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: dark ? "#9ca3af" : "#999", padding: 2 }}>
-                <X size={16} />
-              </button>
-            </div>
+              Rəy və Təklif
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: C.muted, padding: 4, display: "flex",
+              borderRadius: 8, transition: "color .15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = C.text}
+            onMouseLeave={e => e.currentTarget.style.color = C.muted}
+          >
+            <X size={17} />
+          </button>
+        </div>
 
-            {/* Body */}
-            <div style={{ padding: "14px 16px" }}>
-              {/* Category */}
-              <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-                {[{ val: "idea", label: "💡 Təklif" }, { val: "bug", label: "🐛 Xəta" }, { val: "other", label: "💬 Digər" }].map(c => (
-                  <button key={c.val} onClick={() => setCat(c.val)} style={{
-                    flex: 1, padding: "5px 0", fontSize: 11, fontWeight: 600, cursor: "pointer",
-                    border: `1px solid ${cat === c.val ? "#1a4a8a" : (dark ? "#374151" : "#d4d4d4")}`,
-                    background: cat === c.val ? "#1a4a8a" : "transparent",
-                    color: cat === c.val ? "#fff" : (dark ? "#9ca3af" : "#666"),
-                  }}>{c.label}</button>
-                ))}
-              </div>
-
-              {/* Text */}
-              <textarea
-                value={text}
-                onChange={e => setText(e.target.value)}
-                placeholder="Fikirlərinizi yazın..."
-                rows={4}
-                style={{
-                  width: "100%", boxSizing: "border-box", padding: "8px 10px", fontSize: 13,
-                  border: `1px solid ${dark ? "#374151" : "#d4d4d4"}`,
-                  background: dark ? "#111827" : "#fafafa",
-                  color: dark ? "#f3f4f6" : "#1a1a1a",
-                  resize: "none", outline: "none", fontFamily: "inherit",
-                }}
-              />
-
+        {/* Body */}
+        <div style={{ padding: "18px 22px 22px" }}>
+          {/* Category tabs */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+            {CATEGORIES.map(c => (
               <button
-                onClick={send}
-                disabled={loading || !text.trim()}
+                key={c.val}
+                onClick={() => setCat(c.val)}
                 style={{
-                  marginTop: 8, width: "100%", padding: "9px", background: "#1a4a8a",
-                  color: "#fff", border: "none", fontSize: 13, fontWeight: 600,
-                  cursor: loading || !text.trim() ? "not-allowed" : "pointer",
-                  opacity: loading || !text.trim() ? 0.6 : 1,
+                  flex: 1, padding: "7px 0", fontSize: 12, fontWeight: 700,
+                  cursor: "pointer", borderRadius: 10, transition: "all .15s",
+                  border: `1px solid ${cat === c.val ? ACCENT : C.border}`,
+                  background: cat === c.val ? ACCENT : "transparent",
+                  color: cat === c.val ? "#fff" : C.muted,
+                  fontFamily: "'Archivo', sans-serif",
                 }}
               >
-                {loading ? "Göndərilir..." : "Göndər"}
+                {c.label}
               </button>
-            </div>
+            ))}
           </div>
+
+          {/* Textarea */}
+          <textarea
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder="Fikirlərinizi yazın..."
+            rows={4}
+            style={{
+              width: "100%", boxSizing: "border-box",
+              padding: "11px 14px", fontSize: 13.5,
+              border: `1px solid ${C.border}`,
+              borderRadius: 12,
+              background: C.input,
+              color: C.text,
+              resize: "none", outline: "none",
+              fontFamily: "'Archivo', sans-serif",
+              lineHeight: 1.55,
+              transition: "border-color .15s",
+            }}
+            onFocus={e => e.target.style.borderColor = ACCENT}
+            onBlur={e => e.target.style.borderColor = C.border}
+          />
+
+          {/* Send button */}
+          <button
+            onClick={send}
+            disabled={loading || !text.trim()}
+            style={{
+              marginTop: 12, width: "100%", padding: "11px",
+              background: text.trim() && !loading ? ACCENT : C.input,
+              border: `1px solid ${text.trim() && !loading ? ACCENT : C.border}`,
+              color: text.trim() && !loading ? "#fff" : C.muted,
+              borderRadius: 12, fontSize: 13.5, fontWeight: 700,
+              cursor: text.trim() && !loading ? "pointer" : "not-allowed",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+              fontFamily: "'Archivo', sans-serif",
+              transition: "all .15s",
+              boxShadow: text.trim() && !loading ? "0 4px 14px rgba(30,144,255,0.30)" : "none",
+            }}
+          >
+            <Send size={14} />
+            {loading ? "Göndərilir..." : "Göndər"}
+          </button>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }

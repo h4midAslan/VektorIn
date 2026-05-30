@@ -1,7 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer } from "./components/Toast";
-import FeedbackButton from "./components/FeedbackButton";
 import InstallPrompt from "./components/InstallPrompt";
 import { usePushNotifications } from "./hooks/usePushNotifications";
 import { useIsMobile } from "./hooks/useIsMobile";
@@ -294,7 +293,6 @@ function AppShell({ children, adminCheck }) {
         }>
           {children}
         </Suspense>
-        <FeedbackButton />
       </div>
       {isMobile && <BottomNav C={C} />}
     </div>
