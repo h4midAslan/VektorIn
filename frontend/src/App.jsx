@@ -87,6 +87,13 @@ function PrivateRoute({ children }) {
   );
 }
 
+function FeedRoute({ children }) {
+  const token = localStorage.getItem("token");
+  usePushNotifications();
+  if (!token) return <Navigate to="/login" />;
+  return children;
+}
+
 function AdminRoute({ children }) {
   const token = localStorage.getItem("token");
   const [allowed, setAllowed] = useState(null);
@@ -136,7 +143,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/feed" element={<PrivateRoute><Feed /></PrivateRoute>} />
+          <Route path="/feed" element={<FeedRoute><Feed /></FeedRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/profile/:id" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/search" element={<PrivateRoute><Search /></PrivateRoute>} />

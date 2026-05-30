@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { Heart, ThumbsDown, MessageCircle, Send, Pin, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen, TrendingUp } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Heart, ThumbsDown, MessageCircle, Send, Pin, Image as ImageIcon, Film,
+  Flag, X, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight,
+  BookOpen, TrendingUp, Home, Search, Users, MessageSquare, Bell,
+  User, Settings, Shield, PenSquare, Sun, Moon,
+} from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
@@ -34,6 +39,8 @@ const COLORS = {
     sidebarBg: "#f5f7fb",
     rowHover: "#f8fafd",
     barBlur: "rgba(255,255,255,0.88)",
+    navActive: "rgba(30,144,255,0.10)",
+    navHover: "#f3f6fb",
     btnPrimary: { background: ACCENT, color: "#fff", border: `1px solid ${ACCENT}` },
     btnGhost: { background: "#f5f7fb", color: "#3a4861", border: "1px solid #e4e9f1" },
   },
@@ -59,6 +66,8 @@ const COLORS = {
     sidebarBg: "#0a1c39",
     rowHover: "rgba(255,255,255,0.025)",
     barBlur: "rgba(5,15,31,0.88)",
+    navActive: "rgba(30,144,255,0.16)",
+    navHover: "rgba(255,255,255,0.05)",
     btnPrimary: { background: ACCENT, color: "#fff", border: `1px solid ${ACCENT}` },
     btnGhost: { background: "transparent", color: "#c4d0e0", border: "1px solid #1a2b49" },
   },
@@ -112,6 +121,158 @@ function ActionBtn({ C, onClick, active, activeColor, icon, count, title }) {
   );
 }
 
+function NavItem({ C, to, icon, label, active }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <Link to={to}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{
+        display: "flex", alignItems: "center", gap: 14, padding: "11px 14px", borderRadius: 12,
+        background: active ? C.navActive : hover ? C.navHover : "transparent",
+        color: active ? C.text : C.textSoft,
+        textDecoration: "none", fontFamily: "'Archivo', sans-serif",
+        fontWeight: active ? 800 : 600, fontSize: 15.5, transition: "background .12s",
+      }}>
+      <span style={{ color: active ? C.accent : "currentColor", flexShrink: 0 }}>{icon}</span>
+      {label}
+    </Link>
+  );
+}
+
+function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
+  const location = useLocation();
+  const p = location.pathname;
+
+  const navItems = [
+    { to: "/feed", icon: <Home size={21} />, label: "Yeniliklər" },
+    { to: "/search", icon: <Search size={21} />, label: "Axtar" },
+    { to: "/connections", icon: <Users size={21} />, label: "Bağlantılar" },
+    { to: "/messages", icon: <MessageSquare size={21} />, label: "Mesajlar" },
+    { to: "/articles", icon: <BookOpen size={21} />, label: "Məqalələr" },
+    { to: "/profile", icon: <User size={21} />, label: "Profil" },
+    { to: "/settings", icon: <Settings size={21} />, label: "Parametrlər" },
+    ...(user?.is_admin ? [{ to: "/admin", icon: <Shield size={21} />, label: "Admin" }] : []),
+  ];
+
+  const [themeHover, setThemeHover] = useState(false);
+
+  return (
+    <div style={{
+      width: 256, flexShrink: 0, position: "sticky", top: 0,
+      alignSelf: "flex-start", height: "100vh",
+      display: "flex", flexDirection: "column", padding: "0 10px",
+      overflowY: "auto",
+    }}>
+      {/* Logo */}
+      <div style={{ padding: "18px 6px 10px", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: 12, background: ACCENT,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 4px 16px rgba(30,144,255,0.40)",
+          color: "#fff", fontWeight: 900, fontSize: 20,
+          fontFamily: "'Archivo', sans-serif", flexShrink: 0,
+        }}>#</div>
+        <span style={{ fontWeight: 900, fontSize: 20, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1, marginTop: 4 }}>
+        {navItems.map(item => {
+          const active = p === item.to || (item.to !== "/feed" && item.to !== "/profile" && p.startsWith(item.to));
+          return <NavItem key={item.to} C={C} to={item.to} icon={item.icon} label={item.label} active={active} />;
+        })}
+      </nav>
+
+      {/* Paylaş */}
+      <div style={{ padding: "14px 2px 10px" }}>
+        <button onClick={onCompose} style={{
+          width: "100%", padding: "13px 0", borderRadius: 99,
+          background: ACCENT, color: "#fff", border: "none",
+          fontFamily: "'Archivo', sans-serif", fontWeight: 800, fontSize: 15,
+          cursor: "pointer", letterSpacing: "0.02em",
+          boxShadow: "0 4px 16px rgba(30,144,255,0.35)",
+        }}>
+          Paylaş
+        </button>
+      </div>
+
+      {/* Bottom: theme + profile */}
+      <div style={{ borderTop: `1px solid ${C.divider}`, padding: "10px 0 18px", display: "flex", flexDirection: "column", gap: 2 }}>
+        <button
+          onMouseEnter={() => setThemeHover(true)} onMouseLeave={() => setThemeHover(false)}
+          onClick={onToggleTheme}
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "10px 14px", borderRadius: 12,
+            background: themeHover ? C.navHover : "transparent",
+            border: "none", color: C.textSoft, cursor: "pointer",
+            fontFamily: "'Archivo', sans-serif", fontSize: 14.5, fontWeight: 600,
+            width: "100%", textAlign: "left", transition: "background .12s",
+          }}>
+          {dark ? <Sun size={19} /> : <Moon size={19} />}
+          {dark ? "Açıq tema" : "Qaranlıq tema"}
+        </button>
+
+        {user && (
+          <Link to="/profile" style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "8px 12px", borderRadius: 12, textDecoration: "none",
+          }}
+            onMouseEnter={e => e.currentTarget.style.background = C.navHover}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <UserAvatar user={user} size="sm" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: 13.5, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'Archivo', sans-serif" }}>{user.full_name}</div>
+              <div style={{ fontSize: 11, color: C.muted, fontFamily: "'JetBrains Mono', monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                @{user.username || user.email?.split("@")[0]}
+              </div>
+            </div>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BottomNav({ C, onCompose }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const p = location.pathname;
+
+  const items = [
+    { path: "/feed", icon: <Home size={22} /> },
+    { path: "/search", icon: <Search size={22} /> },
+    { compose: true, icon: <PenSquare size={22} /> },
+    { path: "/messages", icon: <MessageSquare size={22} /> },
+    { path: "/profile", icon: <User size={22} /> },
+  ];
+
+  return (
+    <div style={{
+      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
+      height: 60, background: C.barBlur,
+      backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+      borderTop: `1px solid ${C.divider}`,
+      display: "flex", alignItems: "stretch",
+    }}>
+      {items.map((item, i) => {
+        const isActive = item.path && (p === item.path || (item.path !== "/feed" && item.path !== "/profile" && p.startsWith(item.path)));
+        return (
+          <button key={i} onClick={() => item.compose ? onCompose() : navigate(item.path)}
+            style={{
+              flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+              border: "none", background: "transparent", cursor: "pointer",
+              color: isActive ? C.accent : C.muted, transition: "color .12s",
+            }}>
+            {item.icon}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Panel({ C, children }) {
   return (
     <div style={{ background: C.sidebarBg, border: C.border, borderRadius: 18, overflow: "hidden" }}>
@@ -122,7 +283,7 @@ function Panel({ C, children }) {
 
 function PanelHead({ C, children }) {
   return (
-    <div style={{ padding: "16px 18px 12px", fontWeight: 900, fontSize: 18, letterSpacing: "0.01em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>
+    <div style={{ padding: "16px 18px 12px", fontWeight: 900, fontSize: 17, letterSpacing: "0.01em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>
       {children}
     </div>
   );
@@ -144,7 +305,6 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Pinned label */}
         {post.is_pinned && (
           <div style={{ marginBottom: 6 }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.accent, background: C.accentWash, padding: "3px 9px", borderRadius: 6, fontFamily: "'JetBrains Mono', monospace" }}>
@@ -153,7 +313,6 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
           </div>
         )}
 
-        {/* Header row */}
         <header style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0, marginBottom: 4 }}>
           <Link to={`/profile/${post.author_id}`}
             style={{ fontWeight: 800, fontSize: 15, color: C.text, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0, fontFamily: "'Archivo', sans-serif" }}>
@@ -180,7 +339,6 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
           )}
         </header>
 
-        {/* Content */}
         {post.content && (
           <p style={{ fontSize: 15, color: C.textBody, lineHeight: 1.65, margin: "0 0 10px", whiteSpace: "pre-wrap", fontFamily: "'Archivo', sans-serif" }}>
             {post.content.split(/(#[\p{L}\d_]+)/gu).map((part, i) =>
@@ -202,7 +360,6 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
           </div>
         )}
 
-        {/* Action bar */}
         <div style={{ display: "flex", alignItems: "center", gap: 2, marginTop: 8, marginLeft: -8 }}>
           <ActionBtn C={C} onClick={() => onToggleComments(post.id)}
             active={openComments[post.id]} activeColor={C.accent}
@@ -228,7 +385,6 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
           )}
         </div>
 
-        {/* Comments */}
         {openComments[post.id] && (
           <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.divider}` }}>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -304,10 +460,16 @@ export default function Feed() {
   const [composerFocus, setComposerFocus] = useState(false);
   const [feedTab, setFeedTab] = useState("foryou");
 
+  const composerRef = useRef(null);
   const { t } = useLang();
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(821);
+  const hideRail = useIsMobile(1121);
   const dark = useDarkMode();
   const C = dark ? COLORS.dark : COLORS.light;
+
+  useEffect(() => {
+    document.body.style.background = C.bg;
+  }, [C.bg]);
 
   useEffect(() => {
     Promise.all([
@@ -480,25 +642,52 @@ export default function Feed() {
     }
   };
 
+  const focusComposer = () => {
+    const ta = composerRef.current?.querySelector("textarea");
+    if (ta) { ta.focus(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  };
+
+  const toggleTheme = () => {
+    const next = !dark;
+    localStorage.setItem("dark_mode", String(next));
+    window.dispatchEvent(new Event("dark_mode_change"));
+  };
+
   const pad = n => String(n).padStart(2, "0");
   const cntD = Math.floor(contestRemaining / 86400);
   const cntH = Math.floor((contestRemaining % 86400) / 3600);
   const cntM = Math.floor((contestRemaining % 3600) / 60);
   const cntS = contestRemaining % 60;
-  const hasSidebar = !isMobile && (suggested.length > 0 || contestInfo);
+
+  const showRightRail = !hideRail && (suggested.length > 0 || contestInfo);
 
   return (
     <div style={{ fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased", background: C.bg, color: C.text, minHeight: "100vh", transition: "background .25s, color .25s" }}>
-      <div style={{ maxWidth: 980, margin: "0 auto", display: "flex", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", justifyContent: "center", maxWidth: 1290, margin: "0 auto" }}>
 
-        {/* ── Center column ── */}
-        <main style={{ flex: 1, minWidth: 0, borderRight: hasSidebar ? `1px solid ${C.borderColor}` : "none" }}>
+        {/* Left sidebar — desktop */}
+        {!isMobile && (
+          <LeftNav C={C} dark={dark} user={user} onCompose={focusComposer} onToggleTheme={toggleTheme} />
+        )}
+
+        {/* Center column */}
+        <main style={{
+          width: "100%", maxWidth: 600, flexShrink: 0,
+          borderLeft: `1px solid ${C.borderColor}`,
+          borderRight: `1px solid ${C.borderColor}`,
+          minHeight: "100vh",
+          paddingBottom: isMobile ? 74 : 60,
+        }}>
 
           {/* Sticky feed header */}
-          <div style={{ position: "sticky", top: 60, zIndex: 15, background: C.barBlur, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: `1px solid ${C.divider}` }}>
+          <div style={{
+            position: "sticky", top: 0, zIndex: 15,
+            background: C.barBlur, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+            borderBottom: `1px solid ${C.divider}`,
+          }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 10px" }}>
-              <h1 style={{ margin: 0, fontWeight: 900, fontSize: 20, letterSpacing: "0.02em", color: C.text }}>Yeniliklər</h1>
-              <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 10, border: C.border, background: "transparent", color: C.textSoft, textDecoration: "none", fontSize: 13.5, fontWeight: 700 }}>
+              <h1 style={{ margin: 0, fontWeight: 900, fontSize: 21, letterSpacing: "0.02em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>Yeniliklər</h1>
+              <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 10, border: C.border, background: "transparent", color: C.textSoft, textDecoration: "none", fontSize: 13.5, fontWeight: 700, fontFamily: "'Archivo', sans-serif" }}>
                 <BookOpen size={16} /> Məqalələr
               </Link>
             </div>
@@ -506,7 +695,11 @@ export default function Feed() {
               {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([id, label]) => {
                 const on = feedTab === id;
                 return (
-                  <button key={id} onClick={() => setFeedTab(id)} style={{ flex: 1, padding: "12px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5, fontWeight: on ? 800 : 600, color: on ? C.text : C.muted, position: "relative" }}>
+                  <button key={id} onClick={() => setFeedTab(id)} style={{
+                    flex: 1, padding: "12px 0", background: "none", border: "none", cursor: "pointer",
+                    fontFamily: "'Archivo', sans-serif", fontSize: 14.5, fontWeight: on ? 800 : 600,
+                    color: on ? C.text : C.muted, position: "relative",
+                  }}>
                     {label}
                     {on && <span style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 48, height: 4, borderRadius: 4, background: C.accent }} />}
                   </button>
@@ -537,7 +730,7 @@ export default function Feed() {
           )}
 
           {/* Composer */}
-          <form onSubmit={handlePost} style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}` }}>
+          <form ref={composerRef} onSubmit={handlePost} style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}` }}>
             <div style={{ flexShrink: 0, paddingTop: 4 }}>
               <UserAvatar user={user} size="md" />
             </div>
@@ -549,7 +742,7 @@ export default function Feed() {
                 onBlur={() => setComposerFocus(false)}
                 placeholder={t("feed_textarea") || "Nə düşünürsən?"}
                 rows={composerFocus || newPost ? 3 : 1}
-                style={{ width: "100%", border: "none", outline: "none", resize: "none", background: "transparent", color: C.text, fontFamily: "inherit", fontSize: 18, lineHeight: 1.5, padding: "4px 0", boxSizing: "border-box", fontWeight: 500 }}
+                style={{ width: "100%", border: "none", outline: "none", resize: "none", background: "transparent", color: C.text, fontFamily: "'Archivo', sans-serif", fontSize: 18, lineHeight: 1.5, padding: "4px 0", boxSizing: "border-box", fontWeight: 500 }}
               />
               <div style={{ height: 2, background: composerFocus ? C.accent : C.divider, transition: "background .2s", marginBottom: 10 }} />
 
@@ -584,12 +777,12 @@ export default function Feed() {
               )}
 
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, border: "none", background: "transparent", cursor: "pointer", color: C.accent, fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, border: "none", background: "transparent", cursor: "pointer", color: C.accent, fontFamily: "'Archivo', sans-serif", fontSize: 14, fontWeight: 700 }}>
                   <ImageIcon size={18} /> Şəkil
                   {imageUrls.length > 0 && <span style={{ background: C.accent, color: "#fff", fontSize: 10, padding: "1px 6px", borderRadius: 8 }}>{imageUrls.length}</span>}
                   <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} style={{ display: "none" }} />
                 </label>
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, border: "none", background: "transparent", cursor: "pointer", color: C.accent, fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, border: "none", background: "transparent", cursor: "pointer", color: C.accent, fontFamily: "'Archivo', sans-serif", fontSize: 14, fontWeight: 700 }}>
                   <Film size={18} /> Video
                   <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoPick} disabled={uploading} style={{ display: "none" }} />
                 </label>
@@ -600,14 +793,14 @@ export default function Feed() {
                   <ThumbsDown size={11} /> göstər
                 </label>
                 <button type="submit" disabled={(!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading}
-                  style={{ padding: "9px 22px", borderRadius: 11, border: "none", background: (newPost.trim() || imageUrls.length || videoUrl) ? C.accent : C.accentMuted, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, cursor: (!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading ? "default" : "pointer", boxShadow: (newPost.trim() || imageUrls.length || videoUrl) ? `0 4px 16px ${C.accentGlow}` : "none", transition: "background .15s", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  style={{ padding: "9px 22px", borderRadius: 11, border: "none", background: (newPost.trim() || imageUrls.length || videoUrl) ? C.accent : C.accentMuted, color: "#fff", fontFamily: "'Archivo', sans-serif", fontWeight: 800, fontSize: 15, cursor: (!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading ? "default" : "pointer", boxShadow: (newPost.trim() || imageUrls.length || videoUrl) ? `0 4px 16px ${C.accentGlow}` : "none", transition: "background .15s", display: "inline-flex", alignItems: "center", gap: 6 }}>
                   <Send size={14} /> {posting ? "..." : t("feed_share") || "Paylaş"}
                 </button>
               </div>
             </div>
           </form>
 
-          {/* Loading skeleton */}
+          {/* Skeleton */}
           {loading && [1, 2, 3].map(i => (
             <div key={i} style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}`, opacity: 0.5 }}>
               <div style={{ width: 46, height: 46, background: C.surface, borderRadius: "50%", flexShrink: 0 }} />
@@ -623,22 +816,13 @@ export default function Feed() {
           {!loading && posts.map(post => (
             <PostItem
               key={post.id}
-              post={post}
-              C={C}
-              user={user}
-              connectedIds={connectedIds}
-              pendingIds={pendingIds}
-              openComments={openComments}
-              comments={comments}
-              commentText={commentText}
-              onLike={handleLike}
-              onDislike={handleDislike}
-              onDelete={handleDelete}
-              onConnect={handleConnect}
-              onToggleComments={toggleComments}
+              post={post} C={C} user={user}
+              connectedIds={connectedIds} pendingIds={pendingIds}
+              openComments={openComments} comments={comments} commentText={commentText}
+              onLike={handleLike} onDislike={handleDislike} onDelete={handleDelete}
+              onConnect={handleConnect} onToggleComments={toggleComments}
               onCommentChange={(id, val) => setCommentText({ ...commentText, [id]: val })}
-              onSubmitComment={submitComment}
-              onReport={setReportPostId}
+              onSubmitComment={submitComment} onReport={setReportPostId}
               t={t}
             />
           ))}
@@ -648,7 +832,7 @@ export default function Feed() {
             <div style={{ textAlign: "center", padding: "24px 0" }}>
               {hasMore ? (
                 <button onClick={loadMore} disabled={loadingMore}
-                  style={{ ...C.btnGhost, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, padding: "10px 28px", cursor: loadingMore ? "default" : "pointer", opacity: loadingMore ? 0.5 : 1, borderRadius: 11, fontFamily: "inherit", fontWeight: 700 }}>
+                  style={{ ...C.btnGhost, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, padding: "10px 28px", cursor: loadingMore ? "default" : "pointer", opacity: loadingMore ? 0.5 : 1, borderRadius: 11, fontFamily: "'Archivo', sans-serif", fontWeight: 700 }}>
                   {loadingMore ? "Yüklənir..." : "Daha çox yüklə"}
                 </button>
               ) : (
@@ -657,19 +841,31 @@ export default function Feed() {
             </div>
           )}
 
-          {/* Empty state */}
+          {/* Empty */}
           {!loading && posts.length === 0 && (
             <div style={{ textAlign: "center", padding: "60px 20px" }}>
               <TrendingUp size={40} style={{ color: C.borderColor, marginBottom: 16 }} />
-              <p style={{ fontWeight: 900, fontSize: 18, color: C.text, margin: "0 0 8px" }}>{t("feed_empty") || "Hələ post yoxdur"}</p>
+              <p style={{ fontWeight: 900, fontSize: 18, color: C.text, margin: "0 0 8px", fontFamily: "'Archivo', sans-serif" }}>{t("feed_empty") || "Hələ post yoxdur"}</p>
               <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>{t("feed_empty_sub") || "Birincin ol!"}</p>
             </div>
           )}
         </main>
 
-        {/* ── Right sidebar ── */}
-        {hasSidebar && (
-          <aside style={{ width: 300, flexShrink: 0, padding: "20px 16px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 60, alignSelf: "flex-start", maxHeight: "calc(100vh - 70px)", overflowY: "auto" }}>
+        {/* Right rail — desktop */}
+        {showRightRail && (
+          <aside style={{ width: 340, flexShrink: 0, padding: "20px 16px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 0, alignSelf: "flex-start", maxHeight: "100vh", overflowY: "auto" }}>
+
+            {/* Search */}
+            <div style={{ position: "relative" }}>
+              <Search size={15} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, pointerEvents: "none" }} />
+              <input
+                type="text"
+                placeholder="Axtar..."
+                onClick={() => window.location.href = "/search"}
+                readOnly
+                style={{ width: "100%", padding: "10px 14px 10px 36px", borderRadius: 12, border: C.border, background: C.surface, color: C.text, fontFamily: "'Archivo', sans-serif", fontSize: 14, outline: "none", cursor: "pointer", boxSizing: "border-box" }}
+              />
+            </div>
 
             {suggested.length > 0 && (
               <Panel C={C}>
@@ -682,7 +878,7 @@ export default function Feed() {
                         {s.profile_picture ? <img src={s.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : s.full_name?.charAt(0)}
                       </Link>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <Link to={`/profile/${s.id}`} style={{ fontSize: 14, fontWeight: 800, color: C.text, textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.full_name}</Link>
+                        <Link to={`/profile/${s.id}`} style={{ fontSize: 14, fontWeight: 800, color: C.text, textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'Archivo', sans-serif" }}>{s.full_name}</Link>
                         <p style={{ fontSize: 12, color: C.muted, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.mutual_count > 0 ? `${s.mutual_count} ümumi bağlantı` : (s.major || "Hash")}</p>
                       </div>
                       <button onClick={() => !sent && handleSuggestedConnect(s.id)} disabled={sent}
@@ -708,7 +904,7 @@ export default function Feed() {
                 <div style={{ padding: "14px 18px 12px", borderBottom: `1px solid ${C.divider}`, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
                   <div>
                     <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>■ Foto Müsabiqəsi</p>
-                    <p style={{ margin: "3px 0 0", fontSize: 15, fontWeight: 900, color: C.text }}>{contestInfo.title || "Hash Müsabiqəsi"}</p>
+                    <p style={{ margin: "3px 0 0", fontSize: 15, fontWeight: 900, color: C.text, fontFamily: "'Archivo', sans-serif" }}>{contestInfo.title || "Hash Müsabiqəsi"}</p>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: C.accent, lineHeight: 1 }}>{contestInfo.prize}</p>
@@ -766,12 +962,15 @@ export default function Feed() {
         )}
       </div>
 
+      {/* Mobile bottom nav */}
+      {isMobile && <BottomNav C={C} onCompose={focusComposer} />}
+
       {/* Report modal */}
       {reportPostId && (
         <div onClick={() => !reporting && setReportPostId(null)}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
           <div onClick={e => e.stopPropagation()} style={{ background: C.bg, border: C.border, borderRadius: 18, maxWidth: 400, width: "100%", padding: "24px" }}>
-            <h3 style={{ fontSize: 16, fontWeight: 900, color: C.text, margin: "0 0 6px" }}>Postu şikayət et</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 900, color: C.text, margin: "0 0 6px", fontFamily: "'Archivo', sans-serif" }}>Postu şikayət et</h3>
             <p style={{ fontSize: 12.5, color: C.muted, margin: "0 0 14px" }}>Admin yoxladıqdan sonra tədbir görüləcək</p>
             <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} placeholder="Səbəb (istəyə bağlı)..."
               style={{ width: "100%", border: C.border, borderRadius: 10, background: C.sidebarBg, color: C.text, padding: "10px 12px", fontSize: 13, resize: "none", outline: "none", boxSizing: "border-box" }} rows={3} maxLength={300} />
