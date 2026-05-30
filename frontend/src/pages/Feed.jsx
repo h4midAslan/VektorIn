@@ -695,7 +695,7 @@ export default function Feed() {
 
   return (
     <div
-      style={{ fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased", background: C.bg, color: C.text, minHeight: "100vh", transition: "background .25s, color .25s" }}
+      style={{ fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased", background: C.bg, color: C.text, minHeight: "100vh", transition: "background .25s, color .25s", overflowX: "hidden" }}
       onTouchStart={isMobile ? handleTouchStart : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
@@ -781,7 +781,7 @@ export default function Feed() {
         </>
       )}
 
-      <div style={{ display: "flex", justifyContent: "center", maxWidth: 1290, margin: "0 auto" }}>
+      <div style={{ display: "flex", justifyContent: "center", maxWidth: 1290, margin: "0 auto", width: "100%" }}>
 
         {/* Left sidebar — desktop */}
         {!isMobile && (
@@ -1019,7 +1019,7 @@ export default function Feed() {
 
         {/* Right rail — desktop */}
         {showRightRail && (
-          <aside style={{ width: 340, flexShrink: 0, padding: "20px 16px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 0, alignSelf: "flex-start", maxHeight: "100vh", overflowY: "auto", overflowX: "hidden" }}>
+          <aside style={{ width: 340, minWidth: 260, flexShrink: 1, padding: "20px 16px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 0, alignSelf: "flex-start", maxHeight: "100vh", overflowY: "auto", overflowX: "hidden" }}>
 
             {/* Search */}
             <div style={{ position: "relative" }}>
