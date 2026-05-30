@@ -11,19 +11,35 @@ import { toast } from "../components/Toast";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDarkMode } from "../hooks/useTheme";
 
+const ACCENT = "#1E90FF";
+
+function useFonts() {
+  useEffect(() => {
+    if (document.getElementById("hash-fonts")) return;
+    const link = document.createElement("link");
+    link.id = "hash-fonts";
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=JetBrains+Mono:wght@500;600&display=swap";
+    document.head.appendChild(link);
+  }, []);
+}
+
 export default function Admin() {
   const isMobile = useIsMobile();
   const dark = useDarkMode();
+  useFonts();
   const C = {
-    primary: "#1a4a8a",
-    text: dark ? "#f3f4f6" : "#1a1a1a",
-    muted: dark ? "#9ca3af" : "#666",
-    faint: dark ? "#6b7280" : "#999",
-    border: dark ? "#374151" : "#d4d4d4",
-    bg: dark ? "#111827" : "#f2f2f2",
-    white: dark ? "#1f2937" : "#ffffff",
-    danger: dark ? "#f87171" : "#dc2626",
-    success: dark ? "#34d399" : "#16a34a",
+    primary: ACCENT,
+    text: dark ? "#ffffff" : "#071428",
+    muted: dark ? "#7d8ba3" : "#69768d",
+    faint: dark ? "#4a5568" : "#a0aec0",
+    border: dark ? "rgba(255,255,255,0.07)" : "#e4e9f1",
+    bg: dark ? "#050f1f" : "#f0f4fa",
+    white: dark ? "#0a1c39" : "#ffffff",
+    danger: "#f87171",
+    success: "#34d399",
+    font: "'Archivo', sans-serif",
+    mono: "'JetBrains Mono', monospace",
   };
   const [tab, setTab] = useState("dashboard");
   const [stats, setStats] = useState(null);
@@ -274,13 +290,16 @@ export default function Admin() {
 
   const inputStyle = {
     width: "100%",
-    padding: "8px 12px",
+    padding: "9px 12px",
     border: `1px solid ${C.border}`,
-    background: C.white,
+    background: dark ? "rgba(255,255,255,0.04)" : "#f8faff",
     color: C.text,
     fontSize: 13,
     outline: "none",
     boxSizing: "border-box",
+    borderRadius: 10,
+    fontFamily: C.font,
+    transition: "border-color 0.15s",
   };
 
   const flatBtnStyle = (bg, color) => ({
@@ -294,24 +313,27 @@ export default function Admin() {
     fontSize: 12,
     fontWeight: 600,
     cursor: "pointer",
+    borderRadius: 8,
+    fontFamily: C.font,
   });
 
   return (
-    <div style={{ minHeight: "calc(100vh - 64px)", background: C.bg }}>
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: isMobile ? "12px 8px" : "20px 12px" }}>
+    <div style={{ minHeight: "calc(100vh - 64px)", background: C.bg, fontFamily: C.font }}>
+      <div style={{ maxWidth: 980, margin: "0 auto", padding: isMobile ? "16px 10px" : "28px 16px" }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{
-              width: 44, height: 44, background: C.primary,
+              width: 46, height: 46, background: ACCENT, borderRadius: 14,
               display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 6px 20px rgba(30,144,255,0.35)",
             }}>
               <Shield size={22} color="#fff" />
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: C.text }}>Admin Panel</h1>
-              <p style={{ margin: 0, fontSize: 12, color: C.muted, marginTop: 2 }}>Hash platformasını idarə et</p>
+              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: C.text, letterSpacing: "-0.01em" }}>Admin Panel</h1>
+              <p style={{ margin: 0, fontSize: 12, color: C.muted, marginTop: 2, fontFamily: C.mono }}>Hash platformasını idarə et</p>
             </div>
           </div>
           <button
@@ -324,9 +346,10 @@ export default function Admin() {
             }}
             style={{
               display: "flex", alignItems: "center", gap: 6,
-              padding: "7px 14px", background: C.white,
-              border: `1px solid ${C.border}`, cursor: "pointer",
-              fontSize: 13, color: C.muted, fontWeight: 500,
+              padding: "8px 16px", background: C.white,
+              border: `1px solid ${C.border}`, borderRadius: 10,
+              cursor: "pointer", fontSize: 13, color: C.muted, fontWeight: 600,
+              fontFamily: C.font,
             }}
           >
             <RefreshCw size={14} />
@@ -334,26 +357,32 @@ export default function Admin() {
           </button>
         </div>
 
-        {/* Tabs — classic underline style */}
-        <div style={{ display: "flex", borderBottom: `2px solid ${C.border}`, marginBottom: 24, overflowX: "auto", whiteSpace: "nowrap" }}>
+        {/* Tab bar */}
+        <div style={{
+          display: "flex", gap: 2,
+          background: C.white,
+          border: `1px solid ${C.border}`,
+          borderRadius: 14, padding: 4,
+          marginBottom: 24, overflowX: "auto", whiteSpace: "nowrap",
+        }}>
           {tabs.map(({ id, icon: Icon, label }) => (
             <button
               key={id}
               onClick={() => setTab(id)}
               style={{
                 display: "flex", alignItems: "center", gap: 6,
-                padding: "10px 16px",
-                background: "none",
-                border: "none",
-                borderBottom: tab === id ? `2px solid ${C.primary}` : "2px solid transparent",
-                marginBottom: -2,
-                color: tab === id ? C.primary : C.muted,
-                fontWeight: tab === id ? 700 : 500,
-                fontSize: 13,
-                cursor: "pointer",
+                padding: isMobile ? "7px 10px" : "8px 14px",
+                background: tab === id ? ACCENT : "transparent",
+                border: "none", borderRadius: 10,
+                color: tab === id ? "#fff" : C.muted,
+                fontWeight: tab === id ? 800 : 600,
+                fontSize: 12, cursor: "pointer",
+                fontFamily: C.font,
+                boxShadow: tab === id ? "0 4px 14px rgba(30,144,255,0.30)" : "none",
+                transition: "all 0.15s",
               }}
             >
-              <Icon size={15} /> {label}
+              <Icon size={13} /> {label}
             </button>
           ))}
         </div>
@@ -380,9 +409,9 @@ export default function Admin() {
 
             {stats && (
               <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: "16px 20px" }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: "16px 20px", borderRadius: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.text }}>Platform xülasəsi</h3>
+                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: C.text }}>Platform xülasəsi</h3>
                     <Activity size={16} color={C.muted} />
                   </div>
                   <OverviewRow label="Orta post/istifadəçi" value={stats.total_users > 0 ? (stats.total_posts / stats.total_users).toFixed(1) : "0"} dark={dark} />
@@ -391,9 +420,9 @@ export default function Admin() {
                   <OverviewRow label="Bloklanmış istifadəçi" value={stats.total_users - stats.active_users} highlight={stats.total_users - stats.active_users > 0} dark={dark} />
                 </div>
 
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: "16px 20px" }}>
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: "16px 20px", borderRadius: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.text }}>Sürətli əməliyyatlar</h3>
+                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: C.text }}>Sürətli əməliyyatlar</h3>
                     <TrendingUp size={16} color={C.faint} />
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1460,7 +1489,7 @@ export default function Admin() {
         <div onClick={() => !creating && setShowCreateModal(false)}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background: dark ? "#1f2937" : "#fff", border: `1px solid ${C.border}`, width: "100%", maxWidth: 420, padding: "24px" }}>
+            style={{ background: dark ? "#0a1c39" : "#fff", border: `1px solid ${C.border}`, borderRadius: 20, width: "100%", maxWidth: 420, padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.text, display: "flex", alignItems: "center", gap: 8 }}>
                 <UserPlus size={16} color={C.primary} /> Yeni İstifadəçi
@@ -1586,28 +1615,34 @@ function LogRow({ log, isLast, isEven, dark }) {
 function StatCard({ icon: Icon, label, value, subtitle, dark }) {
   return (
     <div style={{
-      background: dark ? "#1f2937" : "#ffffff",
-      border: dark ? "1px solid #374151" : "1px solid #d4d4d4",
-      padding: "14px 18px",
+      background: dark ? "#0a1c39" : "#ffffff",
+      border: dark ? "1px solid rgba(255,255,255,0.07)" : "1px solid #e4e9f1",
+      borderRadius: 16,
+      padding: "16px 18px",
       height: "100%",
       boxSizing: "border-box",
+      fontFamily: "'Archivo', sans-serif",
     }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{
-          width: 36, height: 36, background: "#1a4a8a",
+          width: 38, height: 38, background: "rgba(30,144,255,0.12)",
+          borderRadius: 11,
           display: "flex", alignItems: "center", justifyContent: "center",
+          border: "1px solid rgba(30,144,255,0.20)",
         }}>
-          <Icon size={18} color="#fff" />
+          <Icon size={18} color={ACCENT} />
         </div>
         {subtitle && (
           <span style={{
-            fontSize: 11, fontWeight: 600, color: dark ? "#60a5fa" : "#1a4a8a",
-            background: dark ? "#1f2937" : "#eef3fa", padding: "2px 7px", border: dark ? "1px solid #374151" : "1px solid #c5d5ea",
+            fontSize: 10, fontWeight: 600, color: ACCENT,
+            background: "rgba(30,144,255,0.10)", padding: "2px 8px",
+            borderRadius: 99, border: "1px solid rgba(30,144,255,0.20)",
+            fontFamily: "'JetBrains Mono', monospace",
           }}>{subtitle}</span>
         )}
       </div>
-      <p style={{ margin: "0 0 2px", fontSize: 28, fontWeight: 700, color: dark ? "#f3f4f6" : "#1a1a1a", lineHeight: 1 }}>{value}</p>
-      <p style={{ margin: 0, fontSize: 12, color: dark ? "#9ca3af" : "#666" }}>{label}</p>
+      <p style={{ margin: "0 0 3px", fontSize: 28, fontWeight: 900, color: dark ? "#ffffff" : "#071428", lineHeight: 1, letterSpacing: "-0.02em" }}>{value}</p>
+      <p style={{ margin: 0, fontSize: 12, color: dark ? "#7d8ba3" : "#69768d" }}>{label}</p>
     </div>
   );
 }
