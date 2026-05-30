@@ -109,12 +109,19 @@ export default function Messages() {
         const partnerId = data.is_mine ? data.receiver_id : data.sender_id;
 
         if (chat && (chat.userId === data.sender_id || chat.userId === data.receiver_id)) {
-          setMessages(prev =>
-            prev.some(m => m.id === data.id) ? prev : [...prev, {
-              id: data.id, sender_id: data.sender_id, content: data.content,
-              is_mine: data.is_mine, is_read: data.is_mine, created_at: data.created_at,
-            }]
-          );
+          setMessages(prev => {
+            if (prev.some(m => m.id === data.id)) return prev;
+            // WS REST-dən tez gələrsə tmp_ mesajı əvəzlə, dublikat olmasın
+            if (data.is_mine) {
+              const tmpIdx = prev.findIndex(m => String(m.id).startsWith("tmp_"));
+              if (tmpIdx !== -1) {
+                const updated = [...prev];
+                updated[tmpIdx] = { id: data.id, sender_id: data.sender_id, content: data.content, is_mine: true, is_read: false, created_at: data.created_at };
+                return updated;
+              }
+            }
+            return [...prev, { id: data.id, sender_id: data.sender_id, content: data.content, is_mine: data.is_mine, is_read: data.is_mine, created_at: data.created_at }];
+          });
           if (!data.is_mine && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ type: "read", other_user_id: data.sender_id }));
           }
