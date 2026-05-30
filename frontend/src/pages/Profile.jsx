@@ -121,6 +121,9 @@ export default function Profile() {
   const [userPosts, setUserPosts]     = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionCount, setConnectionCount] = useState(null);
+  const [connModal, setConnModal] = useState(false);
+  const [connList, setConnList] = useState([]);
+  const [connListLoading, setConnListLoading] = useState(false);
   const [cvParsing, setCvParsing]     = useState(false);
   const [cvPreview, setCvPreview]     = useState(null);
   const fileInputRef = useRef(null);
@@ -128,11 +131,12 @@ export default function Profile() {
 
   useEffect(() => {
     loadProfile(); loadCertificates(); loadProjects(); loadUserPosts();
-    if (id) {
+    const targetId = id ? Number(id) : null;
+    if (targetId) {
       api.get("/connections/my")
-        .then(res => setIsConnected(res.data.some(c => c.user_id === Number(id))))
+        .then(res => setIsConnected(res.data.some(c => c.user_id === targetId)))
         .catch(() => {});
-      api.get(`/connections/count/${id}`)
+      api.get(`/connections/count/${targetId}`)
         .then(res => setConnectionCount(res.data.count))
         .catch(() => {});
     } else {
@@ -142,6 +146,18 @@ export default function Profile() {
         .catch(() => {});
     }
   }, [id]);
+
+  const openConnModal = async () => {
+    setConnModal(true);
+    if (connList.length > 0) return;
+    setConnListLoading(true);
+    try {
+      const targetId = id || (await api.get("/users/me")).data.id;
+      const res = await api.get(`/connections/list/${targetId}`);
+      setConnList(res.data);
+    } catch {}
+    setConnListLoading(false);
+  };
 
   const loadProfile = async () => {
     try {
@@ -376,7 +392,7 @@ export default function Profile() {
             <p style={{ margin: "0 0 8px", fontSize: 13, color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>{user.email}</p>
             {connectionCount !== null && (
               <button
-                onClick={() => navigate(id ? `/connections?user=${id}` : "/connections")}
+                onClick={openConnModal}
                 style={{ background: "none", border: "none", padding: 0, cursor: "pointer", marginBottom: 8, display: "inline-flex", alignItems: "center", gap: 0 }}>
                 <span style={{ fontSize: 13.5, fontWeight: 800, color: ACCENT, fontFamily: "'Archivo', sans-serif" }}>
                   {connectionCount >= 500 ? "500+" : connectionCount}
@@ -790,6 +806,51 @@ export default function Profile() {
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
             <button onClick={applyCvPreview} style={btnPrimary({ flex: 1, justifyContent: "center" })}><Send size={14} />Profilə tətbiq et</button>
             <button onClick={() => setCvPreview(null)} style={btnGhost()}>Ləğv et</button>
+          </div>
+        </div>
+      </div>
+    )}
+    {/* Connections modal */}
+    {connModal && (
+      <div onClick={() => setConnModal(false)} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: C.surface, borderRadius: 18, width: "100%", maxWidth: 440, maxHeight: "80vh", display: "flex", flexDirection: "column", overflow: "hidden", border: C.border }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: `1px solid ${C.divider}` }}>
+            <span style={{ fontWeight: 900, fontSize: 16, color: C.text, fontFamily: "'Archivo', sans-serif" }}>
+              Bağlantılar {connectionCount !== null && <span style={{ color: C.muted, fontWeight: 600, fontSize: 14 }}>({connectionCount >= 500 ? "500+" : connectionCount})</span>}
+            </span>
+            <button onClick={() => setConnModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, display: "flex", padding: 4, borderRadius: 8 }}>
+              <X size={20} />
+            </button>
+          </div>
+          {/* List */}
+          <div style={{ overflowY: "auto", flex: 1 }}>
+            {connListLoading ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: 32 }}>
+                <div style={{ width: 28, height: 28, border: "3px solid rgba(30,144,255,0.2)", borderTopColor: ACCENT, borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+              </div>
+            ) : connList.length === 0 ? (
+              <p style={{ textAlign: "center", color: C.muted, padding: "32px 20px", fontSize: 14 }}>Hələ bağlantı yoxdur</p>
+            ) : connList.map(c => (
+              <Link key={c.user_id} to={`/profile/${c.user_id}`} onClick={() => setConnModal(false)}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", textDecoration: "none", borderBottom: `1px solid ${C.divider}` }}
+                onMouseEnter={e => e.currentTarget.style.background = C.rowHover}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <div style={{ width: 46, height: 46, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: ACCENT }}>
+                  {c.profile_picture
+                    ? <img src={c.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 17, fontFamily: "'Archivo', sans-serif" }}>{c.full_name?.charAt(0)}</div>
+                  }
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14.5, color: C.text, fontFamily: "'Archivo', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.full_name}</div>
+                  {(c.headline || c.major) && (
+                    <div style={{ fontSize: 12.5, color: C.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 }}>{c.headline || c.major}</div>
+                  )}
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>

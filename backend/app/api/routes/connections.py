@@ -70,6 +70,28 @@ def get_connection_count(user_id: int, db: Session = Depends(get_db), current_us
     return {"count": count}
 
 
+@router.get("/list/{user_id}")
+def get_user_connections(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    conns = db.query(Connection).filter(
+        or_(Connection.sender_id == user_id, Connection.receiver_id == user_id),
+        Connection.status == "accepted",
+    ).all()
+    result = []
+    for c in conns:
+        other_id = c.receiver_id if c.sender_id == user_id else c.sender_id
+        other = db.query(User).filter(User.id == other_id).first()
+        if other:
+            result.append({
+                "user_id": other.id,
+                "full_name": other.full_name,
+                "headline": other.headline,
+                "major": other.major,
+                "profile_picture": other.profile_picture,
+                "username": other.username,
+            })
+    return result
+
+
 @router.get("/sent")
 def get_sent(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     sent = db.query(Connection).filter(
