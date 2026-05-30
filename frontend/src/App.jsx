@@ -114,7 +114,7 @@ function LeftNav({ C, dark, user, onToggleTheme }) {
       width: 256, flexShrink: 0, position: "sticky", top: 0,
       alignSelf: "flex-start", height: "100vh",
       display: "flex", flexDirection: "column", padding: "0 10px",
-      borderRight: `1px solid ${C.divider}`, overflowY: "auto",
+      overflow: "hidden",
     }}>
       {/* Logo */}
       <div style={{ padding: "18px 6px 10px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -259,8 +259,15 @@ function AppShell({ children, adminCheck }) {
   return (
     <div style={{ background: C.bg, minHeight: "100vh", display: "flex", fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {!isMobile && <LeftNav C={C} dark={dark} user={user} onToggleTheme={toggleTheme} />}
-      <div style={{ flex: 1, minWidth: 0, minHeight: "100vh", paddingBottom: isMobile ? 64 : 0 }}>
-        {children}
+      <div style={{ flex: 1, minWidth: 0, minHeight: "100vh", paddingBottom: isMobile ? 64 : 0, borderLeft: `1px solid ${C.divider}` }}>
+        <Suspense fallback={
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "50vh" }}>
+            <div style={{ width: 32, height: 32, border: "3px solid rgba(30,144,255,0.2)", borderTopColor: "#1E90FF", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+          </div>
+        }>
+          {children}
+        </Suspense>
         <FeedbackButton />
       </div>
       {isMobile && <BottomNav C={C} />}
@@ -272,7 +279,11 @@ function FeedRoute({ children }) {
   const token = localStorage.getItem("token");
   usePushNotifications();
   if (!token) return <Navigate to="/login" />;
-  return children;
+  return (
+    <Suspense fallback={null}>
+      {children}
+    </Suspense>
+  );
 }
 
 const LazyFallback = () => (
@@ -286,27 +297,25 @@ export default function App() {
     <BrowserRouter>
       <ToastContainer />
       <InstallPrompt />
-      <Suspense fallback={<LazyFallback />}>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/feed" element={<FeedRoute><Feed /></FeedRoute>} />
-          <Route path="/profile" element={<AppShell><Profile /></AppShell>} />
-          <Route path="/profile/:id" element={<AppShell><Profile /></AppShell>} />
-          <Route path="/search" element={<AppShell><Search_ /></AppShell>} />
-          <Route path="/connections" element={<AppShell><Connections /></AppShell>} />
-          <Route path="/messages" element={<AppShell><Messages /></AppShell>} />
-          <Route path="/articles" element={<AppShell><Articles /></AppShell>} />
-          <Route path="/article/new" element={<AppShell><ArticleEditor /></AppShell>} />
-          <Route path="/article/:id/edit" element={<AppShell><ArticleEditor /></AppShell>} />
-          <Route path="/article/:id" element={<AppShell><ArticleView /></AppShell>} />
-          <Route path="/settings" element={<AppShell><Settings_ /></AppShell>} />
-          <Route path="/admin" element={<AppShell adminCheck><Admin /></AppShell>} />
-          <Route path="*" element={<Navigate to="/feed" />} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/feed" element={<FeedRoute><Feed /></FeedRoute>} />
+        <Route path="/profile" element={<AppShell><Profile /></AppShell>} />
+        <Route path="/profile/:id" element={<AppShell><Profile /></AppShell>} />
+        <Route path="/search" element={<AppShell><Search_ /></AppShell>} />
+        <Route path="/connections" element={<AppShell><Connections /></AppShell>} />
+        <Route path="/messages" element={<AppShell><Messages /></AppShell>} />
+        <Route path="/articles" element={<AppShell><Articles /></AppShell>} />
+        <Route path="/article/new" element={<AppShell><ArticleEditor /></AppShell>} />
+        <Route path="/article/:id/edit" element={<AppShell><ArticleEditor /></AppShell>} />
+        <Route path="/article/:id" element={<AppShell><ArticleView /></AppShell>} />
+        <Route path="/settings" element={<AppShell><Settings_ /></AppShell>} />
+        <Route path="/admin" element={<AppShell adminCheck><Admin /></AppShell>} />
+        <Route path="*" element={<Navigate to="/feed" />} />
+      </Routes>
     </BrowserRouter>
   );
 }

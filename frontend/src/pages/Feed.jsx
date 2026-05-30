@@ -161,7 +161,7 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
       width: 256, flexShrink: 0, position: "sticky", top: 0,
       alignSelf: "flex-start", height: "100vh",
       display: "flex", flexDirection: "column", padding: "0 10px",
-      overflowY: "auto",
+      overflow: "hidden",
     }}>
       {/* Logo */}
       <div style={{ padding: "18px 6px 10px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -659,7 +659,7 @@ export default function Feed() {
   const cntM = Math.floor((contestRemaining % 3600) / 60);
   const cntS = contestRemaining % 60;
 
-  const showRightRail = !hideRail && (suggested.length > 0 || contestInfo);
+  const showRightRail = !hideRail;
 
   return (
     <div style={{ fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased", background: C.bg, color: C.text, minHeight: "100vh", transition: "background .25s, color .25s" }}>
@@ -673,8 +673,8 @@ export default function Feed() {
         {/* Center column */}
         <main style={{
           width: "100%", maxWidth: 600, flexShrink: 0,
-          borderLeft: `1px solid ${C.borderColor}`,
-          borderRight: `1px solid ${C.borderColor}`,
+          borderLeft: `1px solid ${C.divider}`,
+          borderRight: `1px solid ${C.divider}`,
           minHeight: "100vh",
           paddingBottom: isMobile ? 74 : 60,
         }}>
@@ -853,7 +853,7 @@ export default function Feed() {
 
         {/* Right rail — desktop */}
         {showRightRail && (
-          <aside style={{ width: 340, flexShrink: 0, padding: "20px 16px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 0, alignSelf: "flex-start", maxHeight: "100vh", overflowY: "auto" }}>
+          <aside style={{ width: 340, flexShrink: 0, padding: "20px 16px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 0, alignSelf: "flex-start", maxHeight: "100vh", overflowY: "auto", overflowX: "hidden" }}>
 
             {/* Search */}
             <div style={{ position: "relative" }}>
