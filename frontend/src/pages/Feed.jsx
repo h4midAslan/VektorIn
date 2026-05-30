@@ -73,6 +73,25 @@ const COLORS = {
   },
 };
 
+function HashMark({ size = 32 }) {
+  return (
+    <svg viewBox="0 0 100 100" width={size} height={size} style={{ display: "block", color: "#fff" }}>
+      <g fill="currentColor">
+        <rect x="30" y="12" width="12" height="76" />
+        <rect x="58" y="12" width="12" height="76" />
+        <rect x="12" y="30" width="76" height="12" />
+        <rect x="12" y="58" width="76" height="12" />
+      </g>
+      <g fill={ACCENT}>
+        <circle cx="36" cy="36" r="6.5" />
+        <circle cx="64" cy="36" r="6.5" />
+        <circle cx="36" cy="64" r="6.5" />
+        <circle cx="64" cy="64" r="6.5" />
+      </g>
+    </svg>
+  );
+}
+
 function useFonts() {
   useEffect(() => {
     if (document.getElementById("hash-fonts")) return;
@@ -168,10 +187,8 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
         <div style={{
           width: 38, height: 38, borderRadius: 12, background: ACCENT,
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(30,144,255,0.40)",
-          color: "#fff", fontWeight: 900, fontSize: 20,
-          fontFamily: "'Archivo', sans-serif", flexShrink: 0,
-        }}>#</div>
+          boxShadow: "0 4px 16px rgba(30,144,255,0.40)", flexShrink: 0,
+        }}><HashMark size={22} /></div>
         <span style={{ fontWeight: 900, fontSize: 20, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
       </div>
 
@@ -792,8 +809,11 @@ export default function Feed() {
                   <button onClick={() => setDrawerOpen(true)} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}>
                     <UserAvatar user={user} size="sm" />
                   </button>
-                  <div style={{ width: 36, height: 36, borderRadius: 11, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18, color: "#fff", fontFamily: "'Archivo', sans-serif", boxShadow: "0 3px 10px rgba(30,144,255,0.35)" }}>
-                    #
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(30,144,255,0.35)", flexShrink: 0 }}>
+                      <HashMark size={20} />
+                    </div>
+                    <span style={{ fontWeight: 900, fontSize: 19, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
                   </div>
                   <Link to="/connections" style={{ color: C.text, display: "flex", padding: 4 }}>
                     <UserPlus size={22} />

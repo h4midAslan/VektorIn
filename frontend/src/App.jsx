@@ -29,6 +29,25 @@ const ArticleView = lazy(() => import("./pages/ArticleView"));
 
 const ACCENT = "#1E90FF";
 
+function HashMark({ size = 32 }) {
+  return (
+    <svg viewBox="0 0 100 100" width={size} height={size} style={{ display: "block", color: "#fff" }}>
+      <g fill="currentColor">
+        <rect x="30" y="12" width="12" height="76" />
+        <rect x="58" y="12" width="12" height="76" />
+        <rect x="12" y="30" width="76" height="12" />
+        <rect x="12" y="58" width="76" height="12" />
+      </g>
+      <g fill={ACCENT}>
+        <circle cx="36" cy="36" r="6.5" />
+        <circle cx="64" cy="36" r="6.5" />
+        <circle cx="36" cy="64" r="6.5" />
+        <circle cx="64" cy="64" r="6.5" />
+      </g>
+    </svg>
+  );
+}
+
 const NAV_COLORS = {
   dark: {
     bg: "#050f1f", text: "#ffffff", textSoft: "#c4d0e0", muted: "#7d8ba3",
@@ -121,10 +140,8 @@ function LeftNav({ C, dark, user, onToggleTheme }) {
         <div style={{
           width: 38, height: 38, borderRadius: 12, background: ACCENT,
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(30,144,255,0.40)",
-          color: "#fff", fontWeight: 900, fontSize: 20,
-          fontFamily: "'Archivo', sans-serif", flexShrink: 0,
-        }}>#</div>
+          boxShadow: "0 4px 16px rgba(30,144,255,0.40)", flexShrink: 0,
+        }}><HashMark size={22} /></div>
         <span style={{ fontWeight: 900, fontSize: 20, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
       </div>
 
