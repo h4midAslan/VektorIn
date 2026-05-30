@@ -9,8 +9,20 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-createRoot(document.getElementById('root')).render(
+const root = createRoot(document.getElementById('root'))
+root.render(
   <StrictMode>
     <App />
   </StrictMode>,
 )
+
+// Fade out splash once React is painted
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    const splash = document.getElementById('splash')
+    if (splash) {
+      splash.classList.add('hide')
+      setTimeout(() => splash.remove(), 420)
+    }
+  })
+})
