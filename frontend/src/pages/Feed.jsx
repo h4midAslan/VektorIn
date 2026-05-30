@@ -296,7 +296,7 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
     <article
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}`, background: hover ? C.rowHover : "transparent", transition: "background .12s" }}
+      style={{ display: "flex", gap: 12, padding: "14px 16px", borderBottom: `1px solid ${C.divider}`, background: hover ? C.rowHover : "transparent", transition: "background .12s" }}
     >
       <div style={{ flexShrink: 0, paddingTop: 2 }}>
         <Link to={`/profile/${post.author_id}`}>
@@ -459,6 +459,7 @@ export default function Feed() {
   const [showAllSuggested, setShowAllSuggested] = useState(false);
   const [composerFocus, setComposerFocus] = useState(false);
   const [feedTab, setFeedTab] = useState("foryou");
+  const [mobileComposer, setMobileComposer] = useState(false);
 
   const composerRef = useRef(null);
   const { t } = useLang();
@@ -685,27 +686,62 @@ export default function Feed() {
             background: C.barBlur, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
             borderBottom: `1px solid ${C.divider}`,
           }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 10px" }}>
-              <h1 style={{ margin: 0, fontWeight: 900, fontSize: 21, letterSpacing: "0.02em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>Yeniliklər</h1>
-              <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 10, border: C.border, background: "transparent", color: C.textSoft, textDecoration: "none", fontSize: 13.5, fontWeight: 700, fontFamily: "'Archivo', sans-serif" }}>
-                <BookOpen size={16} /> Məqalələr
-              </Link>
-            </div>
-            <div style={{ display: "flex", padding: "0 8px" }}>
-              {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([id, label]) => {
-                const on = feedTab === id;
-                return (
-                  <button key={id} onClick={() => setFeedTab(id)} style={{
-                    flex: 1, padding: "12px 0", background: "none", border: "none", cursor: "pointer",
-                    fontFamily: "'Archivo', sans-serif", fontSize: 14.5, fontWeight: on ? 800 : 600,
-                    color: on ? C.text : C.muted, position: "relative",
-                  }}>
-                    {label}
-                    {on && <span style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 48, height: 4, borderRadius: 4, background: C.accent }} />}
-                  </button>
-                );
-              })}
-            </div>
+            {isMobile ? (
+              /* Mobile header — Twitter/X style */
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 8px" }}>
+                  <Link to="/profile">
+                    <UserAvatar user={user} size="sm" />
+                  </Link>
+                  <div style={{ width: 36, height: 36, borderRadius: 11, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18, color: "#fff", fontFamily: "'Archivo', sans-serif", boxShadow: "0 3px 10px rgba(30,144,255,0.35)" }}>
+                    #
+                  </div>
+                  <Link to="/connections" style={{ color: C.text, display: "flex", padding: 4 }}>
+                    <UserPlus size={22} />
+                  </Link>
+                </div>
+                <div style={{ display: "flex" }}>
+                  {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([id, label]) => {
+                    const on = feedTab === id;
+                    return (
+                      <button key={id} onClick={() => setFeedTab(id)} style={{
+                        flex: 1, padding: "11px 0", background: "none", border: "none", cursor: "pointer",
+                        fontFamily: "'Archivo', sans-serif", fontSize: 15, fontWeight: on ? 800 : 500,
+                        color: on ? C.text : C.muted, position: "relative",
+                      }}>
+                        {label}
+                        {on && <span style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 48, height: 4, borderRadius: 4, background: C.accent }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              /* Desktop header */
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 10px" }}>
+                  <h1 style={{ margin: 0, fontWeight: 900, fontSize: 21, letterSpacing: "0.02em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>Yeniliklər</h1>
+                  <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 10, border: C.border, background: "transparent", color: C.textSoft, textDecoration: "none", fontSize: 13.5, fontWeight: 700, fontFamily: "'Archivo', sans-serif" }}>
+                    <BookOpen size={16} /> Məqalələr
+                  </Link>
+                </div>
+                <div style={{ display: "flex", padding: "0 8px" }}>
+                  {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([id, label]) => {
+                    const on = feedTab === id;
+                    return (
+                      <button key={id} onClick={() => setFeedTab(id)} style={{
+                        flex: 1, padding: "12px 0", background: "none", border: "none", cursor: "pointer",
+                        fontFamily: "'Archivo', sans-serif", fontSize: 14.5, fontWeight: on ? 800 : 600,
+                        color: on ? C.text : C.muted, position: "relative",
+                      }}>
+                        {label}
+                        {on && <span style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 48, height: 4, borderRadius: 4, background: C.accent }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Contest banner — mobile */}
@@ -729,8 +765,8 @@ export default function Feed() {
             </div>
           )}
 
-          {/* Composer */}
-          <form ref={composerRef} onSubmit={handlePost} style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}` }}>
+          {/* Composer — hidden on mobile (use FAB) */}
+          <form ref={composerRef} onSubmit={handlePost} style={{ display: isMobile ? "none" : "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}` }}>
             <div style={{ flexShrink: 0, paddingTop: 4 }}>
               <UserAvatar user={user} size="md" />
             </div>
@@ -962,8 +998,80 @@ export default function Feed() {
         )}
       </div>
 
+      {/* Mobile FAB compose */}
+      {isMobile && (
+        <button onClick={() => setMobileComposer(true)} style={{
+          position: "fixed", bottom: 76, right: 18, zIndex: 90,
+          width: 56, height: 56, borderRadius: "50%",
+          background: ACCENT, color: "#fff", border: "none",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 4px 20px rgba(30,144,255,0.50)",
+          cursor: "pointer",
+        }}>
+          <PenSquare size={24} />
+        </button>
+      )}
+
+      {/* Mobile composer modal */}
+      {isMobile && mobileComposer && (
+        <div onClick={() => { if (!newPost.trim() && !imageUrls.length && !videoUrl) setMobileComposer(false); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 200, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: C.bg, borderRadius: "20px 20px 0 0", padding: "16px 16px 32px", maxHeight: "85vh", overflowY: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <button onClick={() => { setMobileComposer(false); setNewPost(""); setImageUrls([]); setVideoUrl(""); }}
+                style={{ background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: 15, fontWeight: 700, padding: "4px 8px", fontFamily: "'Archivo', sans-serif" }}>
+                Ləğv et
+              </button>
+              <button type="button" onClick={async () => { await handlePost({ preventDefault: () => {} }); setMobileComposer(false); }}
+                disabled={(!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading}
+                style={{ padding: "9px 22px", borderRadius: 99, border: "none", background: (newPost.trim() || imageUrls.length || videoUrl) ? C.accent : C.accentMuted, color: "#fff", fontFamily: "'Archivo', sans-serif", fontWeight: 800, fontSize: 15, cursor: "pointer", boxShadow: (newPost.trim() || imageUrls.length || videoUrl) ? `0 4px 14px ${C.accentGlow}` : "none" }}>
+                {posting ? "..." : "Paylaş"}
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: 12 }}>
+              <UserAvatar user={user} size="md" />
+              <div style={{ flex: 1 }}>
+                <textarea
+                  autoFocus
+                  value={newPost}
+                  onChange={e => setNewPost(e.target.value)}
+                  placeholder="Nə düşünürsən?"
+                  rows={4}
+                  style={{ width: "100%", border: "none", outline: "none", resize: "none", background: "transparent", color: C.text, fontFamily: "'Archivo', sans-serif", fontSize: 18, lineHeight: 1.55, padding: "4px 0", boxSizing: "border-box", fontWeight: 500 }}
+                />
+                {imageUrls.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginBottom: 10 }}>
+                    {imageUrls.map((url, i) => (
+                      <div key={i} style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1" }}>
+                        <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <button type="button" onClick={() => setImageUrls(p => p.filter((_, j) => j !== i))}
+                          style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, background: "rgba(0,0,0,0.65)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%" }}>
+                          <X size={11} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div style={{ borderTop: `1px solid ${C.divider}`, marginTop: 12, paddingTop: 12, display: "flex", alignItems: "center", gap: 4 }}>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 10, color: C.accent, cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "'Archivo', sans-serif" }}>
+                <ImageIcon size={20} />
+                {imageUrls.length > 0 && <span style={{ background: C.accent, color: "#fff", fontSize: 10, padding: "1px 6px", borderRadius: 8 }}>{imageUrls.length}</span>}
+                <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} style={{ display: "none" }} />
+              </label>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 12px", borderRadius: 10, color: C.accent, cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "'Archivo', sans-serif" }}>
+                <Film size={20} />
+                <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoPick} disabled={uploading} style={{ display: "none" }} />
+              </label>
+              {uploading && <span style={{ fontSize: 11, color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>Yüklənir...</span>}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile bottom nav */}
-      {isMobile && <BottomNav C={C} onCompose={focusComposer} />}
+      {isMobile && <BottomNav C={C} onCompose={() => setMobileComposer(true)} />}
 
       {/* Report modal */}
       {reportPostId && (
