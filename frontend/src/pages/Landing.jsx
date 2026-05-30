@@ -634,7 +634,7 @@ export default function Landing() {
               </div>
               <p className="hl-fnote">Hash müstəqil tələbə icmasıdır.</p>
             </div>
-            <a className="hl-ig" href="https://www.instagram.com/hashcampus_official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <a className="hl-ig" href="https://www.instagram.com/hash.campuss/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
             </a>
           </div>

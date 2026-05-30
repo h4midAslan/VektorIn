@@ -211,7 +211,7 @@ export default function Navbar() {
         {/* Right side — desktop */}
         <div className="hidden md:flex" style={{ alignItems: "center", height: "100%", marginLeft: "auto", gap: 2 }}>
           {/* Instagram */}
-          <a href="https://www.instagram.com/hashcampus_official/" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.instagram.com/hash.campuss/" target="_blank" rel="noopener noreferrer"
             style={{ display: "flex", alignItems: "center", padding: "0 10px", height: "100%", color: mutedColor, textDecoration: "none", transition: "color .15s" }}
             onMouseEnter={e => e.currentTarget.style.color = "#e1306c"}
             onMouseLeave={e => e.currentTarget.style.color = mutedColor}
@@ -277,7 +277,7 @@ export default function Navbar() {
               </Link>
             );
           })}
-          <a href="https://www.instagram.com/hashcampus_official/" target="_blank" rel="noopener noreferrer"
+          <a href="https://www.instagram.com/hash.campuss/" target="_blank" rel="noopener noreferrer"
             onClick={() => setMobileOpen(false)}
             style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 20px", fontSize: 15, color: dark ? "rgba(255,255,255,0.55)" : "#69768d", textDecoration: "none", borderLeft: "3px solid transparent", fontFamily: "'Archivo', sans-serif" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
