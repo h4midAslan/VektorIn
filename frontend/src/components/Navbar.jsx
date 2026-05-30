@@ -78,10 +78,12 @@ function NotificationDropdown({ onClose, dark }) {
   );
 }
 
-function NavLink({ path, label, admin, isActive, onClick }) {
+function NavLink({ path, label, admin, isActive, onClick, dark }) {
   const [hover, setHover] = useState(false);
   const activeColor = admin ? "#f87171" : ACCENT;
-  const col = isActive ? activeColor : hover ? "#ffffff" : "rgba(255,255,255,0.65)";
+  const defaultCol = dark ? "rgba(255,255,255,0.65)" : "#3a4861";
+  const hoverCol = dark ? "#ffffff" : "#071428";
+  const col = isActive ? activeColor : hover ? hoverCol : defaultCol;
   return (
     <Link
       to={path}
@@ -161,7 +163,7 @@ export default function Navbar() {
       height: "100%", color: mutedColor, display: "flex", alignItems: "center",
       position: "relative", transition: "color .15s",
     }}
-      onMouseEnter={e => e.currentTarget.style.color = "#ffffff"}
+      onMouseEnter={e => e.currentTarget.style.color = dark ? "#ffffff" : "#071428"}
       onMouseLeave={e => e.currentTarget.style.color = mutedColor}
     >
       {children}
@@ -202,7 +204,7 @@ export default function Navbar() {
         {/* Desktop links */}
         <div className="hidden md:flex" style={{ flex: 1, alignItems: "center", height: "100%" }}>
           {links.map(({ path, label, admin }) => (
-            <NavLink key={path} path={path} label={label} admin={admin} isActive={location.pathname === path} />
+            <NavLink key={path} path={path} label={label} admin={admin} isActive={location.pathname === path} dark={dark} />
           ))}
         </div>
 
