@@ -118,6 +118,7 @@ export default function Profile() {
   const [showCertForm, setShowCertForm] = useState(false);
   const [showProjForm, setShowProjForm] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
+  const [avatarZoom, setAvatarZoom] = useState(false);
   const [userPosts, setUserPosts]     = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionCount, setConnectionCount] = useState(null);
@@ -345,10 +346,10 @@ export default function Profile() {
           <div style={{ padding: isMobile ? "0 16px 20px" : "0 28px 24px", marginTop: isMobile ? -36 : -44 }}>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
               {/* Avatar */}
-              <div style={{ position: "relative", flexShrink: 0 }}
-                onClick={isOwn ? () => fileInputRef.current?.click() : undefined}
-                style={{ position: "relative", flexShrink: 0, cursor: isOwn ? "pointer" : "default" }}>
-                <div style={{ width: isMobile ? 72 : 84, height: isMobile ? 72 : 84, borderRadius: "50%", border: `4px solid ${C.bg}`, overflow: "hidden", background: C.surface }}>
+              <div style={{ position: "relative", flexShrink: 0, cursor: "pointer" }}
+                onClick={() => { if (isOwn) fileInputRef.current?.click(); else if (user.profile_picture) setAvatarZoom(true); }}>
+                <div style={{ width: isMobile ? 72 : 84, height: isMobile ? 72 : 84, borderRadius: "50%", border: `4px solid ${C.bg}`, overflow: "hidden", background: C.surface }}
+                  onClick={isOwn ? undefined : (user.profile_picture ? () => setAvatarZoom(true) : undefined)}>
                   <UserAvatar user={user} size="lg" />
                 </div>
                 {isOwn && (
@@ -855,6 +856,18 @@ export default function Profile() {
             ))}
           </div>
         </div>
+      </div>
+    )}
+    {/* Avatar zoom lightbox */}
+    {avatarZoom && user.profile_picture && (
+      <div onClick={() => setAvatarZoom(false)}
+        style={{ position: "fixed", inset: 0, zIndex: 1100, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "zoom-out" }}>
+        <img src={user.profile_picture} alt={user.full_name}
+          style={{ maxWidth: "90vw", maxHeight: "90vh", borderRadius: 16, objectFit: "contain", boxShadow: "0 8px 48px rgba(0,0,0,0.6)" }} />
+        <button onClick={() => setAvatarZoom(false)}
+          style={{ position: "fixed", top: 18, right: 18, background: "rgba(0,0,0,0.6)", border: "none", borderRadius: "50%", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}>
+          <X size={20} />
+        </button>
       </div>
     )}
     </>
