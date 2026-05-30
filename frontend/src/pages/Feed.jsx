@@ -310,12 +310,14 @@ export default function Feed() {
   const C = dark ? COLORS.dark : COLORS.light;
 
   useEffect(() => {
-    loadFeed().finally(() => setLoading(false));
-    loadUser();
-    loadConnections();
-    api.get("/connections/suggested").then(r => setSuggested(r.data)).catch(() => {});
-    api.get("/contest/info").then(r => { if (r.data.active) { setContestInfo(r.data); setContestRemaining(r.data.remaining_seconds); } }).catch(() => {});
-    api.get("/contest/leaderboard").then(r => setContestBoard(r.data.slice(0, 5))).catch(() => {});
+    Promise.all([
+      loadFeed(),
+      loadUser(),
+      loadConnections(),
+      api.get("/connections/suggested").then(r => setSuggested(r.data)).catch(() => {}),
+      api.get("/contest/info").then(r => { if (r.data.active) { setContestInfo(r.data); setContestRemaining(r.data.remaining_seconds); } }).catch(() => {}),
+      api.get("/contest/leaderboard").then(r => setContestBoard(r.data.slice(0, 5))).catch(() => {}),
+    ]).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
