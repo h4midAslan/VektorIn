@@ -805,34 +805,41 @@ export default function Feed() {
             {isMobile ? (
               /* Mobile header — Twitter/X style */
               <>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px 8px" }}>
-                  <button onClick={() => setDrawerOpen(true)} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}>
-                    <UserAvatar user={user} size="sm" />
-                  </button>
-                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "#071428", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.30)", flexShrink: 0 }}>
-                      <HashMark size={22} />
+                {/* Mobile header — Hash style */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 10px" }}>
+                  <button onClick={() => setDrawerOpen(true)} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 9, background: "#071428", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <HashMark size={20} />
                     </div>
-                    <span style={{ fontWeight: 900, fontSize: 19, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
+                    <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
+                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <button onClick={() => setMobileComposer(true)} style={{ background: C.navHover, border: "none", borderRadius: 10, padding: "7px 10px", cursor: "pointer", color: C.textSoft, display: "flex", alignItems: "center" }}>
+                      <PenSquare size={19} />
+                    </button>
+                    <button onClick={() => setDrawerOpen(true)} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "flex" }}>
+                      <UserAvatar user={user} size="sm" />
+                    </button>
                   </div>
-                  <Link to="/connections" style={{ color: C.text, display: "flex", padding: 4 }}>
-                    <UserPlus size={22} />
-                  </Link>
                 </div>
-                <div style={{ display: "flex" }}>
-                  {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([id, label]) => {
-                    const on = feedTab === id;
-                    return (
-                      <button key={id} onClick={() => setFeedTab(id)} style={{
-                        flex: 1, padding: "11px 0", background: "none", border: "none", cursor: "pointer",
-                        fontFamily: "'Archivo', sans-serif", fontSize: 15, fontWeight: on ? 800 : 500,
-                        color: on ? C.text : C.muted, position: "relative",
-                      }}>
-                        {label}
-                        {on && <span style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 48, height: 4, borderRadius: 4, background: C.accent }} />}
-                      </button>
-                    );
-                  })}
+                {/* Pill tabs */}
+                <div style={{ padding: "6px 14px 10px" }}>
+                  <div style={{ display: "flex", background: C.surface, borderRadius: 12, padding: 3, gap: 2 }}>
+                    {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([tabId, label]) => {
+                      const on = feedTab === tabId;
+                      return (
+                        <button key={tabId} onClick={() => setFeedTab(tabId)} style={{
+                          flex: 1, padding: "8px 0", borderRadius: 9, border: "none", cursor: "pointer",
+                          background: on ? C.bg : "transparent",
+                          boxShadow: on ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
+                          fontFamily: "'Archivo', sans-serif", fontSize: 14, fontWeight: on ? 800 : 600,
+                          color: on ? C.accent : C.muted, transition: "all .15s",
+                        }}>
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </>
             ) : (
@@ -844,20 +851,23 @@ export default function Feed() {
                     <BookOpen size={16} /> Məqalələr
                   </Link>
                 </div>
-                <div style={{ display: "flex", padding: "0 8px" }}>
-                  {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([id, label]) => {
-                    const on = feedTab === id;
-                    return (
-                      <button key={id} onClick={() => setFeedTab(id)} style={{
-                        flex: 1, padding: "12px 0", background: "none", border: "none", cursor: "pointer",
-                        fontFamily: "'Archivo', sans-serif", fontSize: 14.5, fontWeight: on ? 800 : 600,
-                        color: on ? C.text : C.muted, position: "relative",
-                      }}>
-                        {label}
-                        {on && <span style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 48, height: 4, borderRadius: 4, background: C.accent }} />}
-                      </button>
-                    );
-                  })}
+                <div style={{ padding: "6px 16px 12px" }}>
+                  <div style={{ display: "flex", background: C.surface, borderRadius: 12, padding: 3, gap: 2 }}>
+                    {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([tabId, label]) => {
+                      const on = feedTab === tabId;
+                      return (
+                        <button key={tabId} onClick={() => setFeedTab(tabId)} style={{
+                          flex: 1, padding: "9px 0", borderRadius: 9, border: "none", cursor: "pointer",
+                          background: on ? C.bg : "transparent",
+                          boxShadow: on ? "0 1px 4px rgba(0,0,0,0.10)" : "none",
+                          fontFamily: "'Archivo', sans-serif", fontSize: 14, fontWeight: on ? 800 : 600,
+                          color: on ? C.accent : C.muted, transition: "all .15s",
+                        }}>
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </>
             )}
@@ -1117,19 +1127,6 @@ export default function Feed() {
         )}
       </div>
 
-      {/* Mobile FAB compose */}
-      {isMobile && (
-        <button onClick={() => setMobileComposer(true)} style={{
-          position: "fixed", bottom: 76, right: 18, zIndex: 90,
-          width: 56, height: 56, borderRadius: "50%",
-          background: ACCENT, color: "#fff", border: "none",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 20px rgba(30,144,255,0.50)",
-          cursor: "pointer",
-        }}>
-          <PenSquare size={24} />
-        </button>
-      )}
 
       {/* Mobile composer modal */}
       {isMobile && mobileComposer && (
