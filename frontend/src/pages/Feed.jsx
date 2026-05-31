@@ -699,7 +699,7 @@ export default function Feed() {
 
   return (
     <div
-      style={{ fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased", background: C.bg, color: C.text, minHeight: "100vh", transition: "background .25s, color .25s", overflowX: "hidden" }}
+      style={{ fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased", background: C.bg, color: C.text, height: "100vh", overflow: "hidden", transition: "background .25s, color .25s" }}
       onTouchStart={isMobile ? handleTouchStart : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
@@ -794,7 +794,7 @@ export default function Feed() {
         </>
       )}
 
-      <div style={{ display: "flex", justifyContent: "center", maxWidth: 1290, margin: "0 auto", width: "100%" }}>
+      <div style={{ display: "flex", justifyContent: "center", maxWidth: 1290, margin: "0 auto", width: "100%", height: "100vh", overflow: "hidden" }}>
 
         {/* Left sidebar — desktop */}
         {!isMobile && (
@@ -806,7 +806,9 @@ export default function Feed() {
           flex: isMobile ? 1 : "none", width: isMobile ? "100%" : "100%", maxWidth: isMobile ? "none" : 600, flexShrink: 0,
           borderLeft: isMobile ? "none" : `1px solid ${C.divider}`,
           borderRight: isMobile ? "none" : `1px solid ${C.divider}`,
-          minHeight: "100vh",
+          height: "100vh",
+          overflowY: "auto",
+          overflowX: "hidden",
           paddingBottom: isMobile ? 74 : 60,
         }}>
 
