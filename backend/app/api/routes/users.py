@@ -23,6 +23,7 @@ class PublicUserResponse(BaseModel):
     username: str | None = None
     full_name: str
     headline: str | None
+    university: str | None = None
     faculty: str | None
     major: str | None
     course: int | None
@@ -50,6 +51,7 @@ class UserResponse(BaseModel):
     username: str | None = None
     full_name: str
     headline: str | None
+    university: str | None = None
     faculty: str | None
     major: str | None
     course: int | None
@@ -76,6 +78,7 @@ class UpdateProfileRequest(BaseModel):
     full_name: str | None = None
     username: str | None = None
     headline: str | None = None
+    university: str | None = None
     major: str | None = None
     course: int | None = None
     bio: str | None = None

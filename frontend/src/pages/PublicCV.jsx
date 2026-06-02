@@ -430,7 +430,7 @@ function CVPage({ profile }) {
                 <Reveal className="block">
                   <SectionTitle>Təhsil</SectionTitle>
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.4 }}>
-                    {profile.university || 'Bakı Dövlət Universiteti'}
+                    {profile.university || profile.faculty}
                   </div>
                   {profile.faculty && <div style={{ fontSize: 12.5, color: '#475569', marginTop: 2 }}>{profile.faculty}</div>}
                   {profile.major && <div style={{ fontSize: 12.5, color: '#475569', marginTop: 1 }}>{profile.major}</div>}

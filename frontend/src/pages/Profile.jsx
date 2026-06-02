@@ -365,7 +365,7 @@ export default function Profile() {
     try {
       await api.put("/users/me", {
         full_name: form.full_name, username: form.username || null,
-        headline: form.headline || null, major: form.major || null,
+        headline: form.headline || null, university: form.university || null, major: form.major || null,
         course: form.course || null, bio: form.bio || null,
         skills: form.skills || null, phone: form.phone || null,
         github_url: form.github_url || null,
@@ -583,6 +583,10 @@ export default function Profile() {
 
               <InputField C={C} label="Başlıq (Headline)">
                 <input type="text" value={form.headline || ""} onChange={e => setForm({ ...form, headline: e.target.value })} placeholder="Frontend Dev · 3-cü kurs" style={inputStyle(C)} />
+              </InputField>
+
+              <InputField C={C} label="Universitet">
+                <input type="text" value={form.university || ""} onChange={e => setForm({ ...form, university: e.target.value })} placeholder="AZTU, BDU, AUA..." style={inputStyle(C)} />
               </InputField>
 
               <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
