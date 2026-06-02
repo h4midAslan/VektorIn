@@ -129,23 +129,38 @@ TAG_KEYWORDS = {
 # ─── Google News RSS axtarış sorğuları ────────────────────────────────────────
 # Hər sorğu müxtəlif kateqoriya üçün
 GNEWS_QUERIES = [
-    ("staj Azərbaycan 2026",          "staj"),
-    ("internship Azerbaijan 2026",     "staj"),
-    ("staj elan Bakı",                 "staj"),
-    ("hackathon Azərbaycan",           "hackathon"),
-    ("hakatom Bakı",                   "hackathon"),
-    ("müsabiqə tələbə Azərbaycan",     "hackathon"),
-    ("yarış texnologiya Azərbaycan",   "hackathon"),
-    ("qrant tələbə Azərbaycan 2026",   "teqaud"),
-    ("scholarship Azerbaijan 2026",    "teqaud"),
-    ("təqaüd Azərbaycan",              "teqaud"),
-    ("akselerator startup Azərbaycan", "proqram"),
-    ("inkubator proqram Bakı",         "proqram"),
-    ("gənclər proqramı Azərbaycan",    "proqram"),
-    ("digicamp Azərbaycan",            "proqram"),
-    ("seminar workshop Bakı texnologiya", "tedbir"),
-    ("konfrans IT Azərbaycan",         "tedbir"),
+    # Staj — "staj proqramı" daha spesifikdir
+    ("staj proqramı Azərbaycan",          "staj"),
+    ("staj elanı Bakı 2026",              "staj"),
+    ("internship program Azerbaijan",      "staj"),
+    ("yay stajı Azərbaycan",              "staj"),
+    # Hackathon
+    ("hackathon Azərbaycan",              "hackathon"),
+    ("hakatom müsabiqə Bakı",             "hackathon"),
+    ("texnologiya yarışması Azərbaycan",  "hackathon"),
+    ("innovation challenge Azerbaijan",   "hackathon"),
+    # Təqaüd — "tələbə" sözü əlavə edərək pensiyadan ayır
+    ("tələbə təqaüdü Azərbaycan 2026",   "teqaud"),
+    ("student scholarship Azerbaijan",    "teqaud"),
+    ("tədqiqat qrantı Azərbaycan",        "teqaud"),
+    # Proqram
+    ("akselerator startup Azərbaycan",    "proqram"),
+    ("inkubator proqramı Bakı",           "proqram"),
+    ("gənclər proqramı Azərbaycan 2026",  "proqram"),
+    ("digicamp Azerbaijan",               "proqram"),
+    # Tədbir
+    ("IT konfransı Bakı 2026",            "tedbir"),
+    ("texnologiya seminarı Azərbaycan",   "tedbir"),
 ]
+
+# Pensiya/ictimai xəbərləri filtreləmək üçün
+_NOISE_WORDS = {
+    "pensiya", "pension", "пенсия", "sığorta", "ictimai", "məvacib",
+    "vergi", "büdcə", "hökumət qərarı", "nazirlik iclası",
+    "xarici siyasət", "diplomatik", "hərbi", "müdafiə",
+    "deputat", "parlament", "seçki", "referendum",
+    "futbol", "idman", "turizm", "mədəniyyət",
+}
 
 
 def gnews_url(query):
@@ -288,6 +303,16 @@ def _parse_rss(xml_text, category_hint, default_org="Azərbaycan"):
             desc = _clean(desc, 300)
 
         full = title + " " + desc
+
+        # Səs-küylü məzmunu at (pensiya, xarici siyasət, idman...)
+        full_lower = full.lower()
+        if any(noise in full_lower for noise in _NOISE_WORDS):
+            continue
+
+        # Yalnız imkanla əlaqəli məqalələr
+        opp_words = set(sum(CATEGORY_KEYWORDS.values(), []))
+        if not any(w in full_lower for w in opp_words):
+            continue
 
         # Kateqoriya
         cat = _detect_category(full, category_hint)
