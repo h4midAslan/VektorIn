@@ -7,3 +7,7 @@ node_modules/
 dist/
 .vite/
 backend/uploads/
+
+# Local utility scripts
+backend/seed*.py
+backend/unseed.py
