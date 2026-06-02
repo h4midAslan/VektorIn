@@ -15,7 +15,7 @@ import api from "./api/client";
 import UserAvatar from "./components/UserAvatar";
 import {
   Home, Search, Users, MessageSquare, BookOpen, User, Settings, Shield,
-  PenSquare, Sun, Moon,
+  PenSquare, Sun, Moon, Bell,
 } from "lucide-react";
 
 const Feed = lazy(() => import("./pages/Feed"));
@@ -120,6 +120,20 @@ function LeftNav({ C, dark, user, onToggleTheme }) {
   const location = useLocation();
   const p = location.pathname;
   const [themeHover, setThemeHover] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    api.get("/notifications/unread-count").then(r => setUnread(r.data.count)).catch(() => {});
+    const iv = setInterval(() => {
+      api.get("/notifications/unread-count").then(r => setUnread(r.data.count)).catch(() => {});
+    }, 30000);
+    return () => clearInterval(iv);
+  }, []);
+
+  // Clear badge when visiting notifications page
+  useEffect(() => {
+    if (p === "/notifications") setUnread(0);
+  }, [p]);
 
   const navItems = [
     { to: "/feed", icon: <Home size={21} />, label: "Yeniliklər" },
@@ -127,6 +141,24 @@ function LeftNav({ C, dark, user, onToggleTheme }) {
     { to: "/connections", icon: <Users size={21} />, label: "Bağlantılar" },
     { to: "/messages", icon: <MessageSquare size={21} />, label: "Mesajlar" },
     { to: "/articles", icon: <BookOpen size={21} />, label: "Məqalələr" },
+    {
+      to: "/notifications",
+      icon: (
+        <span style={{ position: "relative", display: "inline-flex" }}>
+          <Bell size={21} />
+          {unread > 0 && (
+            <span style={{
+              position: "absolute", top: -5, right: -7,
+              background: "#1E90FF", color: "#fff",
+              fontSize: 9, fontWeight: 800, lineHeight: 1,
+              padding: "2px 4px", borderRadius: 20, minWidth: 14,
+              textAlign: "center",
+            }}>{unread > 99 ? "99+" : unread}</span>
+          )}
+        </span>
+      ),
+      label: "Bildirişlər",
+    },
     { to: "/profile", icon: <User size={21} />, label: "Profil" },
     { to: "/settings", icon: <Settings size={21} />, label: "Parametrlər" },
     ...(user?.is_admin ? [{ to: "/admin", icon: <Shield size={21} />, label: "Admin" }] : []),
@@ -215,6 +247,7 @@ function BottomNav({ C }) {
     { path: "/search", icon: <Search size={22} /> },
     { path: "/connections", icon: <Users size={22} /> },
     { path: "/messages", icon: <MessageSquare size={22} /> },
+    { path: "/notifications", icon: <Bell size={22} /> },
     { path: "/profile", icon: <User size={22} /> },
   ];
 
