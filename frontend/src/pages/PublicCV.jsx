@@ -176,16 +176,18 @@ body { background: #f1f5f9; font-family: 'Inter', system-ui, -apple-system, sans
 
 /* PRINT */
 @media print {
-  @page { size: A4 portrait; margin: 1.2cm; }
-  body { background: #fff !important; }
-  .cv-topbar, .cv-footer, .btn { display: none !important; }
+  @page { size: A4 portrait; margin: 0; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff !important; margin: 0 !important; }
+  .cv-topbar, .cv-footer { display: none !important; }
   .cv-shell { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
   .cv-paper { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; margin: 0 !important; }
-  .cv-left { border-right: 1px solid #e2e8f0 !important; }
+  .cv-left { background: #f8fafc !important; border-right: 1px solid #e2e8f0 !important; }
+  .cv-header { background: linear-gradient(135deg,#0c2340 0%,#1a4a8a 55%,#1d5fa8 100%) !important; }
+  .cv-header-glow { display: none !important; }
   .reveal { opacity: 1 !important; transform: none !important; }
-  .cv-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .skill-tag, .proj-card, .tech-tag, .cv-header, .open-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .tl-entry, .proj-card, .cert-row { page-break-inside: avoid; }
+  .tl-entry, .proj-card, .cert-row, .block { page-break-inside: avoid; }
+  a { text-decoration: none !important; }
 }
 `;
 
@@ -210,19 +212,47 @@ const IconCheck = (p) => <Icon {...p}><path d="M5 12.5l4.5 4.5L19 6.5" /></Icon>
 const IconDownload = (p) => <Icon {...p}><path d="M12 3v12m0 0l-4-4m4 4l4-4" /><path d="M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2" /></Icon>;
 
 /* ----------------------------------------------------------------------------
+   TRANSLATIONS
+---------------------------------------------------------------------------- */
+const TRANSLATIONS = {
+  az: {
+    skills: 'Bacarıqlar', education: 'Təhsil', languages: 'Dillər',
+    contact: 'Əlaqə', about: 'Haqqında', experience: 'İş təcrübəsi',
+    projects: 'Layihələr', certificates: 'Sertifikatlar',
+    openToTeam: 'Komandaya açıqdır', share: 'Paylaş', copied: 'Kopyalandı',
+    downloadPdf: 'PDF Yüklə', preparing: 'Hazırlanır...',
+    verify: 'Yoxla →', present: 'İndi', joinUs: 'Sən də qoşul →',
+    madeOn: 'Bu profil Hash Campus-da yaradılıb',
+    showMore: (n) => `+ ${n} daha`, showLess: '− Daha az',
+    courseLabel: (n) => `${n}-ci kurs`,
+    months: ['Yan','Fev','Mar','Apr','May','İyn','İyl','Avq','Sen','Okt','Noy','Dek'],
+  },
+  en: {
+    skills: 'Skills', education: 'Education', languages: 'Languages',
+    contact: 'Contact', about: 'About', experience: 'Work Experience',
+    projects: 'Projects', certificates: 'Certificates',
+    openToTeam: 'Open to team', share: 'Share', copied: 'Copied',
+    downloadPdf: 'Download PDF', preparing: 'Preparing...',
+    verify: 'Verify →', present: 'Present', joinUs: 'Join us →',
+    madeOn: 'This profile was created on Hash Campus',
+    showMore: (n) => `+ ${n} more`, showLess: '− Show less',
+    courseLabel: (n) => `Year ${n}`,
+    months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  },
+};
+
+/* ----------------------------------------------------------------------------
    HELPERS
 ---------------------------------------------------------------------------- */
-const AZ_MONTHS = ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'İyn', 'İyl', 'Avq', 'Sen', 'Okt', 'Noy', 'Dek'];
-
-function fmtDate(raw) {
+function fmtDate(raw, months) {
   if (!raw) return '';
   const d = new Date(raw);
   if (isNaN(d)) return raw;
-  return `${AZ_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
 }
-function dateRange(start, end, isCurrent) {
-  const a = fmtDate(start);
-  const b = isCurrent ? 'İndi' : fmtDate(end);
+function dateRange(start, end, isCurrent, t) {
+  const a = fmtDate(start, t.months);
+  const b = isCurrent ? t.present : fmtDate(end, t.months);
   if (!a && !b) return '';
   return `${a} — ${b}`;
 }
@@ -298,6 +328,8 @@ function CVPage({ profile }) {
   const [scrolled, setScrolled] = useState(false);
   const [copied, setCopied] = useState(false);
   const [skillsOpen, setSkillsOpen] = useState(false);
+  const [lang, setLang] = useState('az');
+  const t = TRANSLATIONS[lang];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -312,39 +344,10 @@ function CVPage({ profile }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const [downloading, setDownloading] = useState(false);
-
-  const handleDownloadPDF = async () => {
-    const el = document.querySelector('.cv-paper');
-    if (!el) return;
-    setDownloading(true);
-    try {
-      const html2pdf = (await import('html2pdf.js')).default;
-      await html2pdf().set({
-        margin: 0,
-        filename: `${profile.full_name.replace(/\s+/g, '_')}_CV.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-          onclone: (doc) => {
-            // Fixed topbar causes a blank first page — remove it from the clone
-            const tb = doc.querySelector('.cv-topbar');
-            if (tb) tb.remove();
-            // Glow has top:-120px which can confuse canvas height calculation
-            const glow = doc.querySelector('.cv-header-glow');
-            if (glow) glow.style.display = 'none';
-          },
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: 'avoid-all' },
-      }).from(el).save();
-    } finally {
-      setDownloading(false);
-    }
+  const handleDownloadPDF = () => {
+    // Use browser print-to-PDF — far more reliable than html2pdf canvas approach.
+    // Print CSS already hides topbar/footer and sets A4 margins.
+    window.print();
   };
 
   const skills = asList(profile.skills);
@@ -355,7 +358,7 @@ function CVPage({ profile }) {
   const initial = (profile.full_name || '?').trim().charAt(0).toUpperCase();
   const avatarColor = colorFromString(profile.full_name);
 
-  const facultyLine = [profile.faculty, profile.major, profile.course ? `${profile.course}-ci kurs` : null]
+  const facultyLine = [profile.faculty, profile.major, profile.course ? t.courseLabel(profile.course) : null]
     .filter(Boolean).join(' · ');
 
   const visibleSkills = skillsOpen ? skills : skills.slice(0, 10);
@@ -387,14 +390,27 @@ function CVPage({ profile }) {
             <span style={{ color: '#1a4a8a', fontSize: 14, fontWeight: 700 }}>Hash Campus</span>
           </a>
           <div className={`cv-topbar-name ${scrolled ? 'show' : ''}`}>{profile.full_name}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Language toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: 8, padding: 3, gap: 2 }}>
+              {['az', 'en'].map((l) => (
+                <button key={l} onClick={() => setLang(l)} style={{
+                  background: lang === l ? '#fff' : 'transparent',
+                  border: 'none', borderRadius: 6, padding: '4px 10px',
+                  fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                  color: lang === l ? '#1a4a8a' : '#64748b',
+                  boxShadow: lang === l ? '0 1px 3px rgba(0,0,0,.1)' : 'none',
+                  transition: 'all .15s ease',
+                }}>{l.toUpperCase()}</button>
+              ))}
+            </div>
             <button className="btn btn-ghost" onClick={handleShare}>
               {copied ? <IconCheck size={15} stroke="#16a34a" /> : <IconShare size={15} />}
-              <span style={{ color: copied ? '#16a34a' : undefined }}>{copied ? 'Kopyalandı' : 'Paylaş'}</span>
+              <span style={{ color: copied ? '#16a34a' : undefined }}>{copied ? t.copied : t.share}</span>
             </button>
-            <button className="btn btn-navy" onClick={handleDownloadPDF} disabled={downloading}>
+            <button className="btn btn-navy" onClick={handleDownloadPDF}>
               <IconDownload size={15} stroke="#fff" />
-              <span>{downloading ? 'Hazırlanır...' : 'PDF Yüklə'}</span>
+              <span>{t.downloadPdf}</span>
             </button>
           </div>
         </div>
@@ -410,7 +426,7 @@ function CVPage({ profile }) {
             {profile.is_open_for_team && (
               <div className="open-badge">
                 <span className="pulse-dot" />
-                Komandaya açıqdır
+                {t.openToTeam}
               </div>
             )}
             <div className="cv-header-top">
@@ -449,13 +465,13 @@ function CVPage({ profile }) {
             <aside className="cv-left">
               {skills.length > 0 && (
                 <Reveal className="block">
-                  <SectionTitle>Bacarıqlar</SectionTitle>
+                  <SectionTitle>{t.skills}</SectionTitle>
                   <div className="skill-wrap">
                     {visibleSkills.map((s, i) => <span key={i} className="skill-tag">{s}</span>)}
                   </div>
                   {skills.length > 10 && (
                     <button className="more-btn" onClick={() => setSkillsOpen((v) => !v)}>
-                      {skillsOpen ? '− Daha az' : `+ ${skills.length - 10} daha`}
+                      {skillsOpen ? t.showLess : t.showMore(skills.length - 10)}
                     </button>
                   )}
                 </Reveal>
@@ -463,7 +479,7 @@ function CVPage({ profile }) {
 
               {(profile.university || profile.faculty || profile.major) && (
                 <Reveal className="block">
-                  <SectionTitle>Təhsil</SectionTitle>
+                  <SectionTitle>{t.education}</SectionTitle>
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.4 }}>
                     {profile.university || profile.faculty}
                   </div>
@@ -476,7 +492,7 @@ function CVPage({ profile }) {
                       profile.edu_start_year
                         ? `${profile.edu_start_year} – ${profile.edu_end_year || '...'}`
                         : null,
-                      profile.course ? `${profile.course}-ci kurs` : null,
+                      profile.course ? t.courseLabel(profile.course) : null,
                       profile.gpa != null ? `GPA ${profile.gpa}` : null,
                     ].filter(Boolean).join(' · ')}
                   </div>
@@ -485,7 +501,7 @@ function CVPage({ profile }) {
 
               {languages.length > 0 && (
                 <Reveal className="block">
-                  <SectionTitle>Dillər</SectionTitle>
+                  <SectionTitle>{t.languages}</SectionTitle>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {languages.map((lg, i) => {
                       const b = langBadge(lg.level);
@@ -502,7 +518,7 @@ function CVPage({ profile }) {
 
               {contacts.length > 0 && (
                 <Reveal className="block">
-                  <SectionTitle>Əlaqə</SectionTitle>
+                  <SectionTitle>{t.contact}</SectionTitle>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {contacts.map((c, i) => (
                       <a key={i} href={c.href} target="_blank" rel="noopener noreferrer" className="contact-row">
@@ -518,14 +534,14 @@ function CVPage({ profile }) {
             <div className="cv-right">
               {profile.bio && (
                 <Reveal className="block">
-                  <SectionTitle>Haqqında</SectionTitle>
+                  <SectionTitle>{t.about}</SectionTitle>
                   <p className="bio">{profile.bio}</p>
                 </Reveal>
               )}
 
               {experiences.length > 0 && (
                 <Reveal className="block">
-                  <SectionTitle icon={<IconBriefcase size={13} stroke="#1a4a8a" />}>İş təcrübəsi</SectionTitle>
+                  <SectionTitle icon={<IconBriefcase size={13} stroke="#1a4a8a" />}>{t.experience}</SectionTitle>
                   <div className="timeline">
                     {experiences.map((ex, i) => (
                       <div className="tl-entry" key={i}>
@@ -538,9 +554,9 @@ function CVPage({ profile }) {
                             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
                               <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>
                                 {ex.role}
-                                {ex.is_current && <span className="now-pill">İndi</span>}
+                                {ex.is_current && <span className="now-pill">{t.present}</span>}
                               </div>
-                              <span style={{ fontSize: 11.5, color: '#94a3b8', whiteSpace: 'nowrap' }}>{dateRange(ex.start_date, ex.end_date, ex.is_current)}</span>
+                              <span style={{ fontSize: 11.5, color: '#94a3b8', whiteSpace: 'nowrap' }}>{dateRange(ex.start_date, ex.end_date, ex.is_current, t)}</span>
                             </div>
                             <div style={{ fontSize: 13, fontWeight: 600, color: '#1E90FF', marginTop: 1 }}>{ex.company}</div>
                             {ex.description && <p style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.65, margin: '5px 0 0' }}>{ex.description}</p>}
@@ -554,7 +570,7 @@ function CVPage({ profile }) {
 
               {projects.length > 0 && (
                 <Reveal className="block">
-                  <SectionTitle icon={<IconFolder size={13} stroke="#1a4a8a" />}>Layihələr</SectionTitle>
+                  <SectionTitle icon={<IconFolder size={13} stroke="#1a4a8a" />}>{t.projects}</SectionTitle>
                   <div className="proj-grid">
                     {projects.map((p, i) => (
                       <a key={i} className="proj-card" href={p.github_url || undefined} target={p.github_url ? '_blank' : undefined} rel="noopener noreferrer">
@@ -577,7 +593,7 @@ function CVPage({ profile }) {
 
               {certificates.length > 0 && (
                 <Reveal className="block">
-                  <SectionTitle icon={<IconAward size={13} stroke="#1a4a8a" />}>Sertifikatlar</SectionTitle>
+                  <SectionTitle icon={<IconAward size={13} stroke="#1a4a8a" />}>{t.certificates}</SectionTitle>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {certificates.map((c, i) => (
                       <div className="cert-row" key={i}>
@@ -586,12 +602,12 @@ function CVPage({ profile }) {
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{c.name}</div>
                             <div style={{ fontSize: 12, color: '#6b7280' }}>
-                              {c.issuer}{c.issue_date ? <span style={{ color: '#9ca3af' }}> · {fmtDate(c.issue_date)}</span> : null}
+                              {c.issuer}{c.issue_date ? <span style={{ color: '#9ca3af' }}> · {fmtDate(c.issue_date, t.months)}</span> : null}
                             </div>
                           </div>
                         </div>
                         {c.credential_url && (
-                          <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="verify-link">Yoxla →</a>
+                          <a href={c.credential_url} target="_blank" rel="noopener noreferrer" className="verify-link">{t.verify}</a>
                         )}
                       </div>
                     ))}
@@ -608,9 +624,9 @@ function CVPage({ profile }) {
         <div className="cv-footer-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <img src="/logo.png" alt="" height="22" style={{ height: 22, width: 22, borderRadius: 6 }} />
-            <span style={{ color: '#9ca3af', fontSize: 11.5 }}>Bu profil Hash Campus-da yaradılıb · hashcampus.site</span>
+            <span style={{ color: '#9ca3af', fontSize: 11.5 }}>{t.madeOn} · hashcampus.site</span>
           </div>
-          <a href="/register" style={{ color: '#1a4a8a', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>Sən də qoşul →</a>
+          <a href="/register" style={{ color: '#1a4a8a', fontSize: 12, fontWeight: 700, textDecoration: 'none' }}>{t.joinUs}</a>
         </div>
       </footer>
     </div>
