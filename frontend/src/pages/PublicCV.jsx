@@ -324,7 +324,21 @@ function CVPage({ profile }) {
         margin: 0,
         filename: `${profile.full_name.replace(/\s+/g, '_')}_CV.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          onclone: (doc) => {
+            // Fixed topbar causes a blank first page — remove it from the clone
+            const tb = doc.querySelector('.cv-topbar');
+            if (tb) tb.remove();
+            // Glow has top:-120px which can confuse canvas height calculation
+            const glow = doc.querySelector('.cv-header-glow');
+            if (glow) glow.style.display = 'none';
+          },
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: 'avoid-all' },
       }).from(el).save();
@@ -453,7 +467,9 @@ function CVPage({ profile }) {
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.4 }}>
                     {profile.university || profile.faculty}
                   </div>
-                  {profile.faculty && <div style={{ fontSize: 12.5, color: '#475569', marginTop: 2 }}>{profile.faculty}</div>}
+                  {profile.university && profile.faculty && (
+                    <div style={{ fontSize: 12.5, color: '#475569', marginTop: 2 }}>{profile.faculty}</div>
+                  )}
                   {profile.major && <div style={{ fontSize: 12.5, color: '#475569', marginTop: 1 }}>{profile.major}</div>}
                   <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
                     {[profile.course ? `${profile.course}-ci kurs` : null, profile.gpa != null ? `GPA ${profile.gpa}` : null].filter(Boolean).join(' · ')}
