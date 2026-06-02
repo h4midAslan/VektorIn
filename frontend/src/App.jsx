@@ -20,6 +20,7 @@ import {
 
 const Feed = lazy(() => import("./pages/Feed"));
 const Profile = lazy(() => import("./pages/Profile"));
+const PublicCV = lazy(() => import("./pages/PublicCV"));
 const Search_ = lazy(() => import("./pages/Search"));
 const Connections = lazy(() => import("./pages/Connections"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -332,7 +333,7 @@ export default function App() {
         <Route path="/feed" element={<FeedRoute><Feed /></FeedRoute>} />
         <Route path="/profile" element={<AppShell><Profile /></AppShell>} />
         <Route path="/profile/:id" element={<AppShell><Profile /></AppShell>} />
-        <Route path="/u/:username" element={<AppShell><Profile /></AppShell>} />
+        <Route path="/u/:username" element={<Suspense fallback={null}><PublicCV /></Suspense>} />
         <Route path="/search" element={<AppShell><Search_ /></AppShell>} />
         <Route path="/connections" element={<AppShell><Connections /></AppShell>} />
         <Route path="/messages" element={<AppShell><Messages /></AppShell>} />

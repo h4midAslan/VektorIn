@@ -11,6 +11,8 @@ from app.api.routes import auth, users, posts, connections, messages, admin, cer
 from app.api.routes import feedback as feedback_router
 from app.api.routes import push as push_router
 from app.api.routes import contest as contest_router
+from app.api.routes import experience as experience_router
+from app.api.routes import public as public_router
 from alembic.config import Config
 from alembic import command
 
@@ -31,6 +33,7 @@ def ensure_tables():
     import app.models.feedback
     import app.models.push_subscription
     import app.models.contest
+    import app.models.experience
     try:
         Base.metadata.create_all(bind=engine, checkfirst=True)
         print("ensure_tables: OK")
@@ -114,6 +117,8 @@ app.include_router(hackathons.router)
 app.include_router(feedback_router.router)
 app.include_router(push_router.router)
 app.include_router(contest_router.router)
+app.include_router(experience_router.router)
+app.include_router(public_router.router)
 
 
 @app.exception_handler(Exception)

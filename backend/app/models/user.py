@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Float
 from sqlalchemy.sql import func
 from app.models.base import Base
 
@@ -23,6 +23,9 @@ class User(Base):
     website_url = Column(String(500))
     skills = Column(Text)  # comma-separated: "Python,React,Design"
     certificates = Column(Text)  # comma-separated
+    languages = Column(Text, nullable=True)   # JSON: [{"lang":"İngilis","level":"B2"}]
+    gpa = Column(Float, nullable=True)
+    show_email = Column(Boolean, default=False)  # CV-də email göstər
     is_open_for_team = Column(Boolean, default=False)  # komanda ucun aciq
     is_admin = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)

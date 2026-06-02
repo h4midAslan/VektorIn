@@ -33,6 +33,9 @@ class PublicUserResponse(BaseModel):
     website_url: str | None
     skills: str | None
     certificates: str | None
+    languages: str | None = None
+    gpa: float | None = None
+    show_email: bool = False
     is_open_for_team: bool
     is_admin: bool
     last_seen: datetime | None = None
@@ -58,6 +61,9 @@ class UserResponse(BaseModel):
     website_url: str | None
     skills: str | None
     certificates: str | None
+    languages: str | None = None
+    gpa: float | None = None
+    show_email: bool = False
     is_open_for_team: bool
     is_admin: bool
     last_seen: datetime | None = None
@@ -80,6 +86,9 @@ class UpdateProfileRequest(BaseModel):
     website_url: str | None = None
     skills: str | None = None
     certificates: str | None = None
+    languages: str | None = None
+    gpa: float | None = None
+    show_email: bool | None = None
     is_open_for_team: bool | None = None
 
 

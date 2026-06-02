@@ -121,6 +121,10 @@ export default function Profile() {
   const [uploadingPic, setUploadingPic] = useState(false);
   const [avatarZoom, setAvatarZoom] = useState(false);
   const [cropSrc, setCropSrc] = useState(null);
+  const [experiences, setExperiences] = useState([]);
+  const [expForm, setExpForm] = useState({ company: "", role: "", start_date: "", end_date: "", is_current: false, description: "" });
+  const [showExpForm, setShowExpForm] = useState(false);
+  const [langList, setLangList] = useState([]);
   const [userPosts, setUserPosts]     = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionCount, setConnectionCount] = useState(null);
@@ -136,7 +140,7 @@ export default function Profile() {
   const cvInputRef   = useRef(null);
 
   useEffect(() => {
-    loadProfile(); loadCertificates(); loadProjects(); loadUserPosts();
+    loadProfile(); loadCertificates(); loadProjects(); loadUserPosts(); loadExperiences();
     const targetId = id ? Number(id) : null;
 
     Promise.all([
@@ -212,6 +216,13 @@ export default function Profile() {
     try {
       const res = id ? await api.get(`/projects/user/${id}`) : await api.get("/projects/me");
       setProjects(res.data);
+    } catch {}
+  };
+
+  const loadExperiences = async () => {
+    try {
+      const res = id ? await api.get(`/experiences/user/${id}`) : await api.get("/experiences/me");
+      setExperiences(res.data);
     } catch {}
   };
 
@@ -291,6 +302,25 @@ export default function Profile() {
     try { await api.delete(`/projects/${projId}`); loadProjects(); } catch {}
   };
 
+  const handleAddExperience = async () => {
+    if (!expForm.company || !expForm.role || !expForm.start_date) return;
+    try {
+      await api.post("/experiences", {
+        ...expForm,
+        end_date: expForm.is_current ? null : (expForm.end_date || null),
+        description: expForm.description || null,
+      });
+      setExpForm({ company: "", role: "", start_date: "", end_date: "", is_current: false, description: "" });
+      setShowExpForm(false);
+      loadExperiences();
+      toast.success("Təcrübə əlavə edildi!");
+    } catch (err) { toast.error(err.response?.data?.detail || "Əlavə edilmədi"); }
+  };
+
+  const handleDeleteExperience = async (expId) => {
+    try { await api.delete(`/experiences/${expId}`); loadExperiences(); } catch {}
+  };
+
   const handleCvUpload = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     setCvParsing(true); setCvPreview(null);
@@ -339,6 +369,9 @@ export default function Profile() {
         course: form.course || null, bio: form.bio || null,
         skills: form.skills || null, github_url: form.github_url || null,
         linkedin_url: form.linkedin_url || null, website_url: form.website_url || null,
+        languages: form.languages || null,
+        gpa: form.gpa ? parseFloat(form.gpa) : null,
+        show_email: form.show_email || false,
         is_open_for_team: form.is_open_for_team,
       });
       setEditing(false); loadProfile();
@@ -585,6 +618,80 @@ export default function Profile() {
                   ))}
                 </div>
               </InputField>
+
+              {/* GPA */}
+              <InputField C={C} label="GPA" hint="(məs. 3.8 / 4.0)">
+                <input type="number" min="0" max="4" step="0.01" value={form.gpa || ""} onChange={e => setForm({ ...form, gpa: e.target.value })} placeholder="3.75" style={inputStyle(C)} />
+              </InputField>
+
+              {/* Dil bilikləri */}
+              <InputField C={C} label="Dil bilikləri">
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {(() => {
+                    let langs = [];
+                    try { langs = form.languages ? JSON.parse(form.languages) : []; } catch { langs = []; }
+                    return langs.map((l, i) => (
+                      <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <input value={l.lang} onChange={e => { const n = [...langs]; n[i].lang = e.target.value; setForm({ ...form, languages: JSON.stringify(n) }); }} placeholder="Dil adı" style={{ ...inputStyle(C), flex: 1 }} />
+                        <select value={l.level} onChange={e => { const n = [...langs]; n[i].level = e.target.value; setForm({ ...form, languages: JSON.stringify(n) }); }} style={{ ...inputStyle(C), flex: 1 }}>
+                          {["Ana dili", "C2 · Mükəmməl", "C1 · Yüksək", "B2 · Orta-yuxarı", "B1 · Orta", "A2 · Başlanğıc", "A1 · Elementar"].map(lv => <option key={lv}>{lv}</option>)}
+                        </select>
+                        <button onClick={() => { const n = langs.filter((_, j) => j !== i); setForm({ ...form, languages: JSON.stringify(n) }); }} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, padding: 4 }}><X size={16} /></button>
+                      </div>
+                    ));
+                  })()}
+                  <button onClick={() => { let langs = []; try { langs = form.languages ? JSON.parse(form.languages) : []; } catch {} setForm({ ...form, languages: JSON.stringify([...langs, { lang: "", level: "B2 · Orta-yuxarı" }]) }); }} style={{ ...btnGhost(), alignSelf: "flex-start", fontSize: 13 }}>
+                    <Plus size={14} />Dil əlavə et
+                  </button>
+                </div>
+              </InputField>
+
+              {/* İş təcrübəsi */}
+              <div style={{ border: C.border, borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ padding: "12px 16px", background: C.bg, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: C.text }}>İş təcrübəsi</span>
+                  <button onClick={() => setShowExpForm(!showExpForm)} style={{ ...btnGhost(), fontSize: 12, padding: "5px 12px" }}><Plus size={13} />Əlavə et</button>
+                </div>
+                {experiences.map(exp => (
+                  <div key={exp.id} style={{ padding: "10px 16px", borderTop: C.border, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{exp.role}</div>
+                      <div style={{ fontSize: 12, color: C.muted }}>{exp.company} · {exp.start_date} — {exp.is_current ? "İndiyədək" : exp.end_date}</div>
+                    </div>
+                    <button onClick={() => handleDeleteExperience(exp.id)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, padding: 4 }}><Trash2 size={15} /></button>
+                  </div>
+                ))}
+                {showExpForm && (
+                  <div style={{ padding: "12px 16px", borderTop: C.border, display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      <input placeholder="Şirkət adı *" value={expForm.company} onChange={e => setExpForm({ ...expForm, company: e.target.value })} style={inputStyle(C)} />
+                      <input placeholder="Vəzifə *" value={expForm.role} onChange={e => setExpForm({ ...expForm, role: e.target.value })} style={inputStyle(C)} />
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      <input type="month" placeholder="Başlama tarixi *" value={expForm.start_date} onChange={e => setExpForm({ ...expForm, start_date: e.target.value })} style={inputStyle(C)} />
+                      {!expForm.is_current && <input type="month" placeholder="Bitmə tarixi" value={expForm.end_date} onChange={e => setExpForm({ ...expForm, end_date: e.target.value })} style={inputStyle(C)} />}
+                    </div>
+                    <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: C.text, cursor: "pointer" }}>
+                      <input type="checkbox" checked={expForm.is_current} onChange={e => setExpForm({ ...expForm, is_current: e.target.checked, end_date: "" })} style={{ accentColor: ACCENT }} />
+                      İndi bu şirkətdə işləyirəm
+                    </label>
+                    <textarea placeholder="Qısa açıqlama (isteğe bağlı)" value={expForm.description} onChange={e => setExpForm({ ...expForm, description: e.target.value })} rows={2} style={{ ...inputStyle(C), resize: "vertical" }} />
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={handleAddExperience} disabled={!expForm.company || !expForm.role || !expForm.start_date} style={btnPrimary({ opacity: (!expForm.company || !expForm.role || !expForm.start_date) ? 0.4 : 1 })}>Əlavə et</button>
+                      <button onClick={() => setShowExpForm(false)} style={btnGhost()}>Ləğv et</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Email göstərmə seçimi */}
+              <label style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", border: C.border, borderRadius: 12, background: C.bg, cursor: "pointer" }}>
+                <input type="checkbox" checked={form.show_email || false} onChange={e => setForm({ ...form, show_email: e.target.checked })} style={{ width: 16, height: 16, accentColor: ACCENT }} />
+                <div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>CV-də email göstər</span>
+                  <p style={{ fontSize: 12, color: C.muted, margin: "2px 0 0" }}>Public profil səhifəsində email ünvanın görünər</p>
+                </div>
+              </label>
 
               <label style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", border: C.border, borderRadius: 12, background: C.bg, cursor: "pointer" }}>
                 <input type="checkbox" checked={form.is_open_for_team || false} onChange={e => setForm({ ...form, is_open_for_team: e.target.checked })} style={{ width: 16, height: 16, accentColor: ACCENT }} />
