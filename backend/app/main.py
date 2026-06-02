@@ -46,6 +46,7 @@ def ensure_tables():
         "ALTER TABLE certificates ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
         "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
+        "ALTER TABLE posts ADD COLUMN IF NOT EXISTS repost_of_id INTEGER REFERENCES posts(id) ON DELETE SET NULL",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS university VARCHAR(255)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_start_year INTEGER",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_end_year INTEGER",

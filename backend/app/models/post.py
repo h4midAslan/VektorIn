@@ -13,11 +13,13 @@ class Post(Base):
     image_url = Column(String(500))
     video_url = Column(String(500))
     is_pinned = Column(Boolean, default=False)
+    repost_of_id = Column(Integer, ForeignKey("posts.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     show_dislikes = Column(Boolean, default=True)
 
     author = relationship("User", backref="posts")
+    repost_of = relationship("Post", remote_side="Post.id", foreign_keys=[repost_of_id])
     likes = relationship("PostLike", backref="post", cascade="all, delete-orphan")
     dislikes = relationship("PostDislike", backref="post", cascade="all, delete-orphan")
     comments = relationship("Comment", backref="post", cascade="all, delete-orphan")

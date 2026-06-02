@@ -23,6 +23,23 @@ def _invalidate_posts_cache():
     _posts_cache.clear()
 
 
+def _build_original(orig: Post) -> dict | None:
+    if not orig:
+        return None
+    images, single_url = _parse_images(orig.image_url)
+    return {
+        "id": orig.id,
+        "content": orig.content,
+        "image_url": single_url,
+        "images": images,
+        "video_url": orig.video_url,
+        "created_at": str(orig.created_at) if orig.created_at else None,
+        "author_name": orig.author.full_name if orig.author else "Silinmiş istifadəçi",
+        "author_id": orig.author_id,
+        "author_picture": orig.author.profile_picture if orig.author else None,
+    }
+
+
 def _get_posts_base(db: Session, limit: int, offset: int) -> list[dict]:
     key = (limit, offset)
     now = time.time()
@@ -32,12 +49,29 @@ def _get_posts_base(db: Session, limit: int, offset: int) -> list[dict]:
 
     posts = (
         db.query(Post)
-        .options(joinedload(Post.author), subqueryload(Post.likes), subqueryload(Post.dislikes), subqueryload(Post.comments))
+        .options(
+            joinedload(Post.author),
+            subqueryload(Post.likes),
+            subqueryload(Post.dislikes),
+            subqueryload(Post.comments),
+            joinedload(Post.repost_of).joinedload(Post.author),
+        )
         .order_by(Post.is_pinned.desc(), Post.created_at.desc())
         .offset(offset)
         .limit(min(limit, 50))
         .all()
     )
+
+    # Count reposts per original post
+    all_ids = [p.id for p in posts]
+    repost_counts = {}
+    if all_ids:
+        from sqlalchemy import case
+        rows = db.query(Post.repost_of_id, sa_func.count(Post.id)).filter(
+            Post.repost_of_id.in_(all_ids)
+        ).group_by(Post.repost_of_id).all()
+        repost_counts = {r[0]: r[1] for r in rows}
+
     data = []
     for post in posts:
         images, single_url = _parse_images(post.image_url)
@@ -56,6 +90,9 @@ def _get_posts_base(db: Session, limit: int, offset: int) -> list[dict]:
             "like_count": len(post.likes),
             "dislike_count": len(post.dislikes),
             "comment_count": len(post.comments),
+            "repost_of_id": post.repost_of_id,
+            "repost_of": _build_original(post.repost_of),
+            "repost_count": repost_counts.get(post.id, 0),
         })
     _posts_cache[key] = {"data": data, "ts": now}
     return data
@@ -111,6 +148,7 @@ class PostCreate(BaseModel):
     images: list[str] = []
     video_url: str | None = None
     show_dislikes: bool = True
+    repost_of_id: int | None = None
 
 
 class CommentCreate(BaseModel):
@@ -119,6 +157,19 @@ class CommentCreate(BaseModel):
 
 class ReportCreate(BaseModel):
     reason: str | None = None
+
+
+class OriginalPostData(BaseModel):
+    id: int
+    content: str | None
+    image_url: str | None
+    images: list[str]
+    video_url: str | None
+    created_at: str | None
+    author_name: str
+    author_id: int
+    author_picture: str | None
+    class Config: from_attributes = True
 
 
 class PostResponse(BaseModel):
@@ -138,6 +189,9 @@ class PostResponse(BaseModel):
     comment_count: int
     is_liked: bool
     is_disliked: bool
+    repost_of_id: int | None = None
+    repost_of: OriginalPostData | None = None
+    repost_count: int = 0
 
     class Config:
         from_attributes = True
@@ -157,6 +211,7 @@ def _parse_images(image_url):
 
 def _build_post_response(post, current_user_id, user_liked_ids, user_disliked_ids):
     images, single_url = _parse_images(post.image_url)
+    orig = _build_original(post.repost_of) if post.repost_of_id else None
     return PostResponse(
         id=post.id,
         content=post.content,
@@ -174,6 +229,9 @@ def _build_post_response(post, current_user_id, user_liked_ids, user_disliked_id
         comment_count=len(post.comments),
         is_liked=post.id in user_liked_ids,
         is_disliked=post.id in user_disliked_ids,
+        repost_of_id=post.repost_of_id,
+        repost_of=OriginalPostData(**orig) if orig else None,
+        repost_count=0,
     )
 
 
@@ -198,21 +256,30 @@ def create_post(data: PostCreate, db: Session = Depends(get_db), current_user: U
         stored_image = json.dumps(data.images)
     else:
         stored_image = data.image_url
-    if not content and not stored_image and not data.video_url:
-        raise HTTPException(status_code=400, detail="Post boş ola bilməz")
-    post = Post(author_id=current_user.id, content=content, image_url=stored_image, video_url=data.video_url, show_dislikes=data.show_dislikes)
+
+    # Repost: only content is allowed (no new images/video on repost)
+    if data.repost_of_id:
+        original = db.query(Post).filter(Post.id == data.repost_of_id).first()
+        if not original:
+            raise HTTPException(status_code=404, detail="Orijinal post tapılmadı")
+        post = Post(author_id=current_user.id, content=content, repost_of_id=data.repost_of_id, show_dislikes=True)
+    else:
+        if not content and not stored_image and not data.video_url:
+            raise HTTPException(status_code=400, detail="Post boş ola bilməz")
+        post = Post(author_id=current_user.id, content=content, image_url=stored_image, video_url=data.video_url, show_dislikes=data.show_dislikes)
+
     db.add(post)
     db.commit()
-    has_image = bool(stored_image)
-    has_video = bool(data.video_url)
-    detail = "şəkil" if has_image else ("video" if has_video else "mətn")
-    log_activity(db, action="post_create", user_id=current_user.id, email=current_user.email, details=detail)
+    log_activity(db, action="post_repost" if data.repost_of_id else "post_create", user_id=current_user.id, email=current_user.email, details=str(data.repost_of_id or ""))
     _invalidate_posts_cache()
     db.refresh(post)
     post.author = current_user
     post.likes = []
     post.dislikes = []
     post.comments = []
+    post.repost_of = original if data.repost_of_id else None
+    if post.repost_of and not hasattr(post.repost_of, 'author'):
+        post.repost_of = db.query(Post).options(joinedload(Post.author)).filter(Post.id == data.repost_of_id).first()
     return _build_post_response(post, current_user.id, set(), set())
 
 

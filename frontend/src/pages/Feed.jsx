@@ -4,7 +4,7 @@ import {
   Heart, ThumbsDown, MessageCircle, Send, Pin, Image as ImageIcon, Film,
   Flag, X, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight,
   BookOpen, TrendingUp, Home, Search, Users, MessageSquare, Bell,
-  User, Settings, Shield, PenSquare, Sun, Moon,
+  User, Settings, Shield, PenSquare, Sun, Moon, Repeat2,
 } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
@@ -312,7 +312,30 @@ function PanelHead({ C, children }) {
   );
 }
 
-function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comments, commentText, onLike, onDislike, onDelete, onConnect, onToggleComments, onCommentChange, onSubmitComment, onReport, t }) {
+function OriginalPostPreview({ orig, C }) {
+  if (!orig) return null;
+  const images = orig.images?.length ? orig.images : orig.image_url ? [orig.image_url] : [];
+  return (
+    <div style={{ border: `1px solid ${C.divider}`, borderRadius: 12, padding: "10px 14px", marginTop: 10, marginBottom: 2, background: C.sidebarBg }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <Link to={`/profile/${orig.author_id}`} style={{ textDecoration: "none" }}>
+          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#1E90FF", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {orig.author_picture
+              ? <img src={orig.author_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : <span style={{ color: "#fff", fontSize: 12, fontWeight: 800 }}>{orig.author_name?.charAt(0)}</span>}
+          </div>
+        </Link>
+        <Link to={`/profile/${orig.author_id}`} style={{ fontSize: 13, fontWeight: 700, color: C.text, textDecoration: "none", fontFamily: "'Archivo', sans-serif" }}>{orig.author_name}</Link>
+        {orig.created_at && <span style={{ fontSize: 11, color: C.muted, marginLeft: "auto", fontFamily: "'JetBrains Mono', monospace" }}>{orig.created_at.slice(0, 10)}</span>}
+      </div>
+      {orig.content && <p style={{ margin: 0, fontSize: 13, color: C.textSoft, lineHeight: 1.55, fontFamily: "'Archivo', sans-serif", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{orig.content.length > 280 ? orig.content.slice(0, 280) + "..." : orig.content}</p>}
+      {images.length > 0 && <img src={images[0]} alt="" style={{ marginTop: 8, width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: 8 }} />}
+      {orig.video_url && <video src={orig.video_url} style={{ marginTop: 8, width: "100%", maxHeight: 180, borderRadius: 8 }} controls />}
+    </div>
+  );
+}
+
+function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comments, commentText, onLike, onDislike, onDelete, onConnect, onToggleComments, onCommentChange, onSubmitComment, onReport, onRepost, t }) {
   const [hover, setHover] = useState(false);
 
   return (
@@ -362,6 +385,11 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
           )}
         </header>
 
+        {post.repost_of_id && !post.content && !post.image_url && !post.images?.length && (
+          <div style={{ fontSize: 12, color: C.muted, marginBottom: 4, display: "flex", alignItems: "center", gap: 5, fontFamily: "'Archivo', sans-serif" }}>
+            <Repeat2 size={13} /> repost etdi
+          </div>
+        )}
         {post.content && (
           <p style={{ fontSize: 15, color: C.textBody, lineHeight: 1.65, margin: "0 0 10px", whiteSpace: "pre-wrap", fontFamily: "'Archivo', sans-serif" }}>
             {post.content.split(/(#[\p{L}\d_]+)/gu).map((part, i) =>
@@ -371,6 +399,7 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
             )}
           </p>
         )}
+        {post.repost_of && <OriginalPostPreview orig={post.repost_of} C={C} />}
 
         {(post.images?.length > 0 || post.image_url) && (
           <div style={{ borderRadius: 14, overflow: "hidden", marginBottom: 10, border: C.border }}>
@@ -396,6 +425,10 @@ function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comme
             active={post.is_disliked} activeColor={C.muted}
             icon={<ThumbsDown size={18} fill={post.is_disliked ? "currentColor" : "none"} />}
             count={post.show_dislikes ? post.dislike_count : undefined} title="Bəyənmə" />
+          <ActionBtn C={C} onClick={() => onRepost(post)}
+            active={false} activeColor={C.accent}
+            icon={<Repeat2 size={18} />}
+            count={post.repost_count || undefined} title="Repost" />
           <div style={{ flex: 1 }} />
           {user && post.author_id !== user.id && (
             <button onClick={() => onReport(post.id)}
@@ -485,6 +518,9 @@ export default function Feed() {
   const [mobileComposer, setMobileComposer] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [repostTarget, setRepostTarget] = useState(null);
+  const [repostText, setRepostText] = useState("");
+  const [reposting, setReposting] = useState(false);
 
   const composerRef = useRef(null);
   const touchStartX = useRef(null);
@@ -647,6 +683,24 @@ export default function Feed() {
     } catch { loadFeed(); }
   };
 
+  const handleRepost = async (withText) => {
+    if (!repostTarget) return;
+    setReposting(true);
+    try {
+      const res = await api.post("/posts", {
+        content: withText ? repostText.trim() || null : null,
+        repost_of_id: repostTarget.id,
+      });
+      setPosts(prev => [res.data, ...prev]);
+      setRepostTarget(null);
+      setRepostText("");
+      toast.success("Repost edildi!");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Repost alınmadı");
+    }
+    setReposting(false);
+  };
+
   const submitReport = async () => {
     if (!reportPostId) return;
     setReporting(true);
@@ -706,6 +760,62 @@ export default function Feed() {
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
       <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
+
+      {/* Repost Modal */}
+      {repostTarget && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) { setRepostTarget(null); setRepostText(""); } }}>
+          <div style={{ background: C.sidebarBg, border: `1px solid ${C.divider}`, borderRadius: 18, padding: 20, width: "100%", maxWidth: 520, boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <span style={{ fontWeight: 800, fontSize: 16, color: C.text, fontFamily: "'Archivo', sans-serif", display: "flex", alignItems: "center", gap: 8 }}>
+                <Repeat2 size={18} color="#1E90FF" /> Repost et
+              </span>
+              <button onClick={() => { setRepostTarget(null); setRepostText(""); }} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Original preview */}
+            <OriginalPostPreview orig={{
+              id: repostTarget.id,
+              content: repostTarget.content,
+              image_url: repostTarget.image_url,
+              images: repostTarget.images || [],
+              video_url: repostTarget.video_url,
+              created_at: repostTarget.created_at,
+              author_name: repostTarget.author_name,
+              author_id: repostTarget.author_id,
+              author_picture: repostTarget.author_picture,
+            }} C={C} />
+
+            {/* Comment textarea */}
+            <textarea
+              value={repostText}
+              onChange={e => setRepostText(e.target.value)}
+              placeholder="Öz fikrini əlavə et... (istəyə bağlı)"
+              rows={3}
+              style={{ width: "100%", marginTop: 12, padding: "10px 12px", border: `1px solid ${C.divider}`, borderRadius: 10, fontSize: 14, color: C.text, background: C.bg, fontFamily: "'Archivo', sans-serif", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+            />
+
+            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+              <button
+                onClick={() => handleRepost(false)}
+                disabled={reposting}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1px solid ${C.divider}`, background: "transparent", color: C.text, fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                <Repeat2 size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
+                Sürətli repost
+              </button>
+              <button
+                onClick={() => handleRepost(true)}
+                disabled={reposting}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: "#1E90FF", color: "#fff", fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                {reposting ? "..." : "Fikirlərlə repost"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile drawer */}
       {isMobile && (
         <>
@@ -1006,6 +1116,7 @@ export default function Feed() {
               onConnect={handleConnect} onToggleComments={toggleComments}
               onCommentChange={(id, val) => setCommentText({ ...commentText, [id]: val })}
               onSubmitComment={submitComment} onReport={setReportPostId}
+              onRepost={setRepostTarget}
               t={t}
             />
           ))}
