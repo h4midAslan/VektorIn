@@ -367,7 +367,8 @@ export default function Profile() {
         full_name: form.full_name, username: form.username || null,
         headline: form.headline || null, major: form.major || null,
         course: form.course || null, bio: form.bio || null,
-        skills: form.skills || null, github_url: form.github_url || null,
+        skills: form.skills || null, phone: form.phone || null,
+        github_url: form.github_url || null,
         linkedin_url: form.linkedin_url || null, website_url: form.website_url || null,
         languages: form.languages || null,
         gpa: form.gpa ? parseFloat(form.gpa) : null,
@@ -602,6 +603,10 @@ export default function Profile() {
 
               <InputField C={C} label="Bacarıqlar" hint="(vergüllə ayırın)">
                 <input type="text" value={form.skills || ""} onChange={e => setForm({ ...form, skills: e.target.value })} placeholder="Python, React, Design" style={inputStyle(C)} />
+              </InputField>
+
+              <InputField C={C} label="Əlaqə nömrəsi">
+                <input type="tel" value={form.phone || ""} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+994 50 123 45 67" style={inputStyle(C)} />
               </InputField>
 
               <InputField C={C} label="Sosial linklər">
