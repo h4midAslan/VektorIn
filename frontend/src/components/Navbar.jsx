@@ -115,7 +115,6 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [showNotifs, setShowNotifs] = useState(false);
   const { t } = useLang();
   const dark = useDarkMode();
 
@@ -221,8 +220,7 @@ export default function Navbar() {
 
           {/* Notifications */}
           <div style={{ position: "relative", height: "100%", display: "flex" }}>
-            {iconBtn(() => { setShowNotifs(v => !v); setUnreadCount(0); }, <Bell size={18} />, unreadCount)}
-            {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} dark={dark} />}
+            {iconBtn(() => { navigate("/notifications"); setUnreadCount(0); }, <Bell size={18} />, unreadCount)}
           </div>
 
           {/* Logout */}
@@ -241,8 +239,7 @@ export default function Navbar() {
         {/* Mobile right */}
         <div className="md:hidden" style={{ display: "flex", alignItems: "center", height: "100%", marginLeft: "auto", gap: 2 }}>
           <div style={{ position: "relative", height: "100%", display: "flex" }}>
-            {iconBtn(() => { setShowNotifs(v => !v); setUnreadCount(0); }, <Bell size={19} />, unreadCount)}
-            {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} dark={dark} />}
+            {iconBtn(() => { navigate("/notifications"); setUnreadCount(0); }, <Bell size={19} />, unreadCount)}
           </div>
           <button onClick={() => setMobileOpen(!mobileOpen)} style={{
             background: "none", border: "none", cursor: "pointer", padding: "0 8px",

@@ -29,6 +29,7 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Articles = lazy(() => import("./pages/Articles"));
 const ArticleEditor = lazy(() => import("./pages/ArticleEditor"));
 const ArticleView = lazy(() => import("./pages/ArticleView"));
+const Notifications = lazy(() => import("./pages/Notifications"));
 
 const ACCENT = "#1E90FF";
 
@@ -341,6 +342,7 @@ export default function App() {
         <Route path="/article/new" element={<AppShell><ArticleEditor /></AppShell>} />
         <Route path="/article/:id/edit" element={<AppShell><ArticleEditor /></AppShell>} />
         <Route path="/article/:id" element={<AppShell><ArticleView /></AppShell>} />
+        <Route path="/notifications" element={<AppShell><Notifications /></AppShell>} />
         <Route path="/settings" element={<AppShell><Settings_ /></AppShell>} />
         <Route path="/admin" element={<AppShell adminCheck><Admin /></AppShell>} />
         <Route path="*" element={<Navigate to="/feed" />} />
