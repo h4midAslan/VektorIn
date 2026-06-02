@@ -46,6 +46,21 @@ def ensure_tables():
         "ALTER TABLE certificates ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
         "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS languages TEXT",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS gpa FLOAT",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS show_email BOOLEAN DEFAULT FALSE",
+        """CREATE TABLE IF NOT EXISTS experiences (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id),
+            company VARCHAR(255) NOT NULL,
+            role VARCHAR(255) NOT NULL,
+            start_date VARCHAR(20) NOT NULL,
+            end_date VARCHAR(20),
+            is_current BOOLEAN DEFAULT FALSE,
+            description TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_experiences_user_id ON experiences(user_id)",
         # Mark pre-verification users as verified (no pending token = real users)
         "UPDATE users SET is_verified = TRUE WHERE is_verified IS NULL",
         "UPDATE users SET is_verified = TRUE WHERE is_verified = FALSE AND verification_token IS NULL",
