@@ -1,4 +1,4 @@
-const CACHE = "hash-v3";
+const CACHE = "hash-v4";
 const STATIC = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png", "/logo.png"];
 
 self.addEventListener("install", e => {

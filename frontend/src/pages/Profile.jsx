@@ -22,6 +22,7 @@ const LinkedinIcon = () => (
 
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
+import AvatarCropModal from "../components/AvatarCropModal";
 import { formatBakuDate } from "../utils/time";
 import { useIsMobile } from "../hooks/useIsMobile";
 
@@ -119,6 +120,7 @@ export default function Profile() {
   const [showProjForm, setShowProjForm] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
   const [avatarZoom, setAvatarZoom] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
   const [userPosts, setUserPosts]     = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionCount, setConnectionCount] = useState(null);
@@ -222,17 +224,26 @@ export default function Profile() {
     try { await api.delete(`/posts/${postId}`); loadUserPosts(); } catch {}
   };
 
-  const handleUploadPic = async (e) => {
+  const handleUploadPic = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropConfirm = async (blob) => {
+    setCropSrc(null);
     setUploadingPic(true);
     try {
-      const formData = new FormData(); formData.append("file", file);
+      const formData = new FormData();
+      formData.append("file", blob, "avatar.jpg");
       const uploadRes = await api.post("/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
       await api.put("/users/me", { profile_picture: uploadRes.data.url });
       loadProfile();
-    } catch {}
+      toast.success("Profil şəkli yeniləndi!");
+    } catch { toast.error("Şəkil yüklənmədi"); }
     setUploadingPic(false);
-    e.target.value = "";
   };
 
 
@@ -902,6 +913,14 @@ export default function Profile() {
           </div>
         </div>
       </div>
+    )}
+    {cropSrc && (
+      <AvatarCropModal
+        imageSrc={cropSrc}
+        onConfirm={handleCropConfirm}
+        onCancel={() => setCropSrc(null)}
+        dark={dark}
+      />
     )}
     {/* Avatar zoom lightbox */}
     {avatarZoom && user.profile_picture && (
