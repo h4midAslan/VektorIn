@@ -1,6 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:8000";
+import { useState } from "react";
 
 export default function UserAvatar({ user, size = "md", className = "" }) {
+  const [imgError, setImgError] = useState(false);
+
   const sizes = {
     xs: "w-8 h-8 text-xs",
     sm: "w-10 h-10 text-sm",
@@ -9,16 +11,18 @@ export default function UserAvatar({ user, size = "md", className = "" }) {
   };
 
   const sizeClass = sizes[size] || sizes.md;
-  const name = user?.full_name || user?.name || "?";
+  const name = user?.full_name || user?.name || user?.email?.split("@")[0] || "U";
   const pic = user?.profile_picture;
 
-  if (pic) {
-    const src = pic.startsWith("http") ? pic : `${API_BASE}${pic}`;
+  const showImg = pic && pic.startsWith("http") && !imgError;
+
+  if (showImg) {
     return (
       <img
-        src={src}
+        src={pic}
         alt={name}
         className={`${sizeClass} rounded-2xl object-cover ${className}`}
+        onError={() => setImgError(true)}
       />
     );
   }
