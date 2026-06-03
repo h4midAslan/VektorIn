@@ -1199,7 +1199,7 @@ export default function Feed() {
                       </Link>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Link to={`/profile/${s.id}`} style={{ fontSize: 14, fontWeight: 800, color: C.text, textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'Archivo', sans-serif" }}>{s.full_name}</Link>
-                        <p style={{ fontSize: 12, color: C.muted, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.mutual_count > 0 ? `${s.mutual_count} ümumi bağlantı` : (s.major || "Hash")}</p>
+                        <p style={{ fontSize: 12, color: C.muted, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.mutual_count > 0 ? `${s.mutual_count} ümumi bağlantı` : (s.headline || s.major || s.faculty || "Hash Campus")}</p>
                       </div>
                       <button onClick={() => !sent && handleSuggestedConnect(s.id)} disabled={sent}
                         style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 999, background: sent ? "transparent" : C.accent, color: sent ? C.textSoft : "#fff", border: sent ? C.border : "none", fontSize: 13, fontWeight: 800, cursor: sent ? "default" : "pointer" }}>
