@@ -57,6 +57,57 @@ UNIVERSITY_DATA = {
             ],
         },
     },
+    "student.aztu.edu.az": {
+        "name": "Azərbaycan Texniki Universiteti",
+        "faculties": {
+            "İnformasiya texnologiyaları və mühəndislik fakültəsi": [
+                "Kompüter mühəndisliyi",
+                "İnformasiya texnologiyaları",
+                "İnformasiya təhlükəsizliyi",
+                "Proqram mühəndisliyi",
+                "Kompüter elmləri",
+                "Süni intellekt",
+                "Radiotexnika və telekommunikasiya mühəndisliyi",
+            ],
+            "Mexanika-maşınqayırma fakültəsi": [
+                "Mexatronika və robototexnika mühəndisliyi",
+                "Maşın mühəndisliyi",
+                "Sənaye mühəndisliyi",
+                "Materiallar mühəndisliyi",
+                "Uçuş aparatlarının mühəndisliyi",
+            ],
+            "Energetika fakültəsi": [
+                "Energetika mühəndisliyi",
+                "Elektrik mühəndisliyi",
+                "Elektrik və elektronika mühəndisliyi",
+                "Bərpa olunan enerji mühəndisliyi",
+            ],
+            "Tikinti mühəndisliyi fakültəsi": [
+                "İnşaat mühəndisliyi",
+                "Memarlıq",
+                "Torpaq kadastrı və daşınmaz əmlak",
+                "Geodeziya mühəndisliyi",
+            ],
+            "Neft-kimya mühəndisliyi fakültəsi": [
+                "Neft mühəndisliyi",
+                "Kimya mühəndisliyi",
+                "Neft-kimya texnologiyası mühəndisliyi",
+                "Ətraf mühit mühəndisliyi",
+            ],
+            "Texnologiya fakültəsi": [
+                "Qida mühəndisliyi",
+                "Yüngül sənaye mühəndisliyi",
+                "Standartlaşdırma və metrologiya",
+            ],
+            "İqtisadiyyat fakültəsi": [
+                "İqtisadiyyat",
+                "Menecment",
+                "Maliyyə",
+                "Mühasibat",
+                "Biznesin idarə edilməsi",
+            ],
+        },
+    },
     "unec.edu.az": {
         "name": "UNEC",
         "faculties": {
