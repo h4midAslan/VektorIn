@@ -10,6 +10,10 @@ import { useDarkMode } from "../hooks/useTheme";
 
 const ACCENT = "#1E90FF";
 
+// Fernet ciphertext detector — gAAAAA... pattern
+const isCipher = (s) => typeof s === "string" && /^gAAAAA[A-Za-z0-9_\-]{10,}/.test(s.trim());
+const safeText = (s) => isCipher(s) ? null : (s || "");
+
 function useFonts() {
   useEffect(() => {
     if (document.getElementById("hash-fonts")) return;
@@ -259,7 +263,7 @@ export default function Messages() {
               fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
               color: ACCENT, fontFamily: "'JetBrains Mono', monospace",
               textTransform: "uppercase",
-            }}>MESSAGES</span>
+            }}>MESAJLAR</span>
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 900, color: C.text, margin: 0, letterSpacing: "-0.02em" }}>
             {t("messages_title")}
@@ -295,8 +299,8 @@ export default function Messages() {
             display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
             <span style={{
-              fontSize: 11, fontWeight: 600, letterSpacing: "0.09em",
-              color: C.muted, textTransform: "uppercase",
+              fontSize: 11, fontWeight: 700, letterSpacing: "0.12em",
+              color: dark ? "#94a3b8" : "#64748b", textTransform: "uppercase",
               fontFamily: "'JetBrains Mono', monospace",
             }}>
               {t("messages_chats")}
@@ -383,10 +387,12 @@ export default function Messages() {
                       )}
                     </div>
                     <p style={{
-                      fontSize: 12, color: C.muted, margin: 0, marginTop: 2,
+                      fontSize: 12, color: isCipher(chat.last_message) ? C.muted : C.muted,
+                      margin: 0, marginTop: 2,
                       overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      fontStyle: isCipher(chat.last_message) ? "italic" : "normal",
                     }}>
-                      {chat.last_message}
+                      {isCipher(chat.last_message) ? "🔒 Şifrələnmiş mesaj" : chat.last_message}
                     </p>
                   </div>
                 </div>
@@ -476,10 +482,21 @@ export default function Messages() {
                         : (dark ? "none" : "0 2px 8px rgba(7,20,40,0.07)"),
                       border: msg.is_mine ? "none" : `1px solid ${C.border}`,
                     }}>
-                      <p style={{
-                        fontSize: 14, lineHeight: 1.55, margin: 0,
-                        wordBreak: "break-word", fontFamily: "'Archivo', sans-serif",
-                      }}>{msg.content}</p>
+                      {(() => {
+                        const decoded = safeText(msg.content);
+                        return (
+                          <p style={{
+                            fontSize: 14, lineHeight: 1.55, margin: 0,
+                            wordBreak: "break-word", overflowWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            fontFamily: "'Archivo', sans-serif",
+                            fontStyle: decoded === null ? "italic" : "normal",
+                            opacity: decoded === null ? 0.65 : 1,
+                          }}>
+                            {decoded === null ? "🔒 Şifrələnmiş mesaj" : decoded}
+                          </p>
+                        );
+                      })()}
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 5 }}>
                         <span style={{
                           fontSize: 10,
