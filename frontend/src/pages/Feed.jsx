@@ -21,6 +21,46 @@ import { useLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDarkMode } from "../hooks/useTheme";
 
+const FACULTY_AZ = {
+  "Mechatronics and robotics": "Mexatronika və robototexnika",
+  "Mechatronics and robotics engineering": "Mexatronika və robototexnika mühəndisliyi",
+  "Computer Science": "Kompüter elmləri",
+  "Computer Engineering": "Kompüter mühəndisliyi",
+  "Software Engineering": "Proqram mühəndisliyi",
+  "Information Technology": "İnformasiya texnologiyaları",
+  "Information Security": "İnformasiya təhlükəsizliyi",
+  "Cybersecurity": "Kibertəhlükəsizlik",
+  "Electrical Engineering": "Elektrik mühəndisliyi",
+  "Electronics and Telecommunications": "Elektronika və telekommunikasiya",
+  "Automation and Control": "Avtomatlaşdırma və idarəetmə",
+  "Artificial Intelligence": "Süni intellekt",
+  "Data Science": "Məlumat elmi",
+  "Mathematics": "Riyaziyyat",
+  "Physics": "Fizika",
+  "Economics": "İqtisadiyyat",
+  "Finance": "Maliyyə",
+  "Management": "İdarəetmə",
+  "Business Administration": "Biznesin idarə edilməsi",
+  "Law": "Hüquq",
+  "Architecture": "Memarlıq",
+  "Civil Engineering": "İnşaat mühəndisliyi",
+  "Environmental Engineering": "Ətraf mühit mühəndisliyi",
+  "Chemical Engineering": "Kimya mühəndisliyi",
+  "Biotechnology": "Biotexnologiya",
+  "Medicine": "Tibb",
+  "Psychology": "Psixologiya",
+  "Journalism": "Jurnalistika",
+  "Translation": "Tərcüme",
+  "Philology": "Filologiya",
+  "International Relations": "Beynəlxalq münasibətlər",
+  "Political Science": "Politologiya",
+};
+
+const toAz = (str) => {
+  if (!str) return str;
+  return FACULTY_AZ[str] ?? FACULTY_AZ[str.trim()] ?? str;
+};
+
 const ACCENT = "#1E90FF";
 
 const COLORS = {
@@ -1107,10 +1147,36 @@ export default function Feed() {
                 </label>
                 {uploading && <span style={{ fontSize: 11, color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>Yüklənir...</span>}
                 <div style={{ flex: 1 }} />
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.muted, cursor: "pointer" }}>
-                  <input type="checkbox" checked={showDislikes} onChange={e => setShowDislikes(e.target.checked)} style={{ accentColor: C.accent }} />
-                  <ThumbsDown size={11} /> göstər
-                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowDislikes(v => !v)}
+                  title={showDislikes ? "Dislike düyməsi aktiv — klikləyib söndür" : "Dislike düyməsini aktiv et"}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    padding: "5px 10px", borderRadius: 20, border: "none", cursor: "pointer",
+                    fontSize: 11.5, fontWeight: 700, fontFamily: "'Archivo', sans-serif",
+                    background: showDislikes ? "rgba(30,144,255,0.12)" : "transparent",
+                    color: showDislikes ? C.accent : C.muted,
+                    transition: "background .15s, color .15s",
+                  }}
+                >
+                  <span style={{
+                    width: 28, height: 16, borderRadius: 8, border: `1.5px solid ${showDislikes ? C.accent : C.muted}`,
+                    background: showDislikes ? C.accent : "transparent",
+                    display: "inline-flex", alignItems: "center",
+                    padding: "0 2px", transition: "background .15s",
+                    flexShrink: 0,
+                  }}>
+                    <span style={{
+                      width: 11, height: 11, borderRadius: "50%",
+                      background: showDislikes ? "#fff" : C.muted,
+                      transform: showDislikes ? "translateX(12px)" : "translateX(0)",
+                      transition: "transform .15s, background .15s",
+                    }} />
+                  </span>
+                  <ThumbsDown size={11} />
+                  {showDislikes ? "Dislike aktiv" : "Dislike"}
+                </button>
                 <button type="submit" disabled={(!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading}
                   style={{ padding: "9px 22px", borderRadius: 11, border: "none", background: (newPost.trim() || imageUrls.length || videoUrl) ? C.accent : C.accentMuted, color: "#fff", fontFamily: "'Archivo', sans-serif", fontWeight: 800, fontSize: 15, cursor: (!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading ? "default" : "pointer", boxShadow: (newPost.trim() || imageUrls.length || videoUrl) ? `0 4px 16px ${C.accentGlow}` : "none", transition: "background .15s", display: "inline-flex", alignItems: "center", gap: 6 }}>
                   <Send size={14} /> {posting ? "..." : t("feed_share") || "Paylaş"}
@@ -1199,7 +1265,13 @@ export default function Feed() {
                       </Link>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Link to={`/profile/${s.id}`} style={{ fontSize: 14, fontWeight: 800, color: C.text, textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'Archivo', sans-serif" }}>{s.full_name}</Link>
-                        <p style={{ fontSize: 12, color: C.muted, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.mutual_count > 0 ? `${s.mutual_count} ümumi bağlantı` : (s.headline || s.major || s.faculty || "Hash Campus")}</p>
+                        {(() => {
+                          const raw = s.mutual_count > 0 ? null : (s.headline || s.major || s.faculty || "Hash Campus");
+                          const label = s.mutual_count > 0 ? `${s.mutual_count} ümumi bağlantı` : toAz(raw);
+                          return (
+                            <p title={label} style={{ fontSize: 12, color: C.muted, margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35 }}>{label}</p>
+                          );
+                        })()}
                       </div>
                       <button onClick={() => !sent && handleSuggestedConnect(s.id)} disabled={sent}
                         style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 999, background: sent ? "transparent" : C.accent, color: sent ? C.textSoft : "#fff", border: sent ? C.border : "none", fontSize: 13, fontWeight: 800, cursor: sent ? "default" : "pointer" }}>
