@@ -1,4 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+
+// ── Module-level cache — komponent unmount olsa da data qalır ──────────────
+// Səhifələr arası keçiddə feed-i yenidən yükləmir (60s TTL)
+let _cache = null;
+let _cacheTs = 0;
+const CACHE_TTL = 60_000; // 60 saniyə
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Heart, ThumbsDown, MessageCircle, Send, Pin, Image as ImageIcon, Film,
@@ -534,30 +540,51 @@ export default function Feed() {
     document.body.style.background = C.bg;
   }, [C.bg]);
 
-  useEffect(() => {
-    Promise.all([
-      loadFeed(),
-      loadUser(),
-      loadConnections(),
-      api.get("/connections/suggested").then(r => setSuggested(r.data)).catch(() => {}),
-      api.get("/contest/info").then(r => { if (r.data.active) { setContestInfo(r.data); setContestRemaining(r.data.remaining_seconds); } }).catch(() => {}),
-      api.get("/contest/leaderboard").then(r => setContestBoard(r.data.slice(0, 5))).catch(() => {}),
-    ]).finally(() => setLoading(false));
+  // Cached data-nı state-ə yüklə
+  const _applyCache = useCallback((d) => {
+    if (!d) return;
+    setPosts(d.posts || []);
+    setFeedOffset((d.posts || []).length);
+    setHasMore((d.posts || []).length === 20);
+    if (d.user) setUser(d.user);
+    if (d.connected_ids) setConnectedIds(new Set(d.connected_ids));
+    if (d.pending_ids) setPendingIds(new Set(d.pending_ids));
+    if (d.suggested) setSuggested(d.suggested);
+    if (d.contest?.active) {
+      setContestInfo(d.contest);
+      setContestRemaining(d.contest.remaining_seconds);
+    }
+    if (d.leaderboard?.length) setContestBoard(d.leaderboard.slice(0, 5));
   }, []);
+
+  useEffect(() => {
+    // Cache mövcuddursa — dərhal göstər, loading yoxdur
+    const now = Date.now();
+    if (_cache && now - _cacheTs < CACHE_TTL) {
+      _applyCache(_cache);
+      setLoading(false);
+      // Arxa planda yenilə (stale-while-revalidate)
+      api.get("/posts/feed-init").then(r => {
+        _cache = r.data; _cacheTs = Date.now();
+        _applyCache(r.data);
+      }).catch(() => {});
+      return;
+    }
+    // İlk yükləmə
+    api.get("/posts/feed-init")
+      .then(r => {
+        _cache = r.data; _cacheTs = Date.now();
+        _applyCache(r.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [_applyCache]);
 
   useEffect(() => {
     if (contestRemaining <= 0) return;
     const timer = setInterval(() => setContestRemaining(r => Math.max(0, r - 1)), 1000);
     return () => clearInterval(timer);
   }, [contestRemaining > 0]);
-
-  const loadConnections = async () => {
-    try {
-      const [myRes, pendRes] = await Promise.all([api.get("/connections/my"), api.get("/connections/sent")]);
-      setConnectedIds(new Set(myRes.data.map(c => c.user_id)));
-      setPendingIds(new Set(pendRes.data.map(c => c.receiver_id)));
-    } catch {}
-  };
 
   const handleConnect = async (userId) => {
     setPendingIds(prev => new Set([...prev, userId]));
@@ -570,16 +597,12 @@ export default function Feed() {
     }
   };
 
-  const loadUser = async () => {
-    try { const res = await api.get("/users/me"); setUser(res.data); } catch {}
-  };
-
+  // Post create/delete sonrası cache-i sıfırlayıb yenilə
   const loadFeed = async () => {
     try {
-      const res = await api.get("/posts?limit=20&offset=0");
-      setPosts(res.data);
-      setFeedOffset(20);
-      setHasMore(res.data.length === 20);
+      const res = await api.get("/posts/feed-init");
+      _cache = res.data; _cacheTs = Date.now();
+      _applyCache(res.data);
     } catch {}
   };
 
@@ -634,6 +657,7 @@ export default function Feed() {
       const res = await api.post("/posts", { content: newPost.trim() || "", images: imageUrls, video_url: videoUrl || null, show_dislikes: showDislikes });
       setNewPost(""); setImageUrls([]); setVideoUrl(""); setShowDislikes(true);
       setPosts(prev => [res.data, ...prev]);
+      _cache = null; // cache-i sıfırla ki növbəti açılışda yeni post görünsün
     } catch (err) { toast.error(err.response?.data?.detail || "Post yaradılmadı"); }
     setPosting(false);
   };
@@ -659,6 +683,7 @@ export default function Feed() {
   const handleDelete = async (postId) => {
     if (!confirm("Bu postu silmək istədiyinə əminsən?")) return;
     setPosts(prev => prev.filter(p => p.id !== postId));
+    _cache = null;
     try { await api.delete(`/posts/${postId}`); } catch { loadFeed(); toast.error("Post silinmədi"); }
   };
 
@@ -692,6 +717,7 @@ export default function Feed() {
         repost_of_id: repostTarget.id,
       });
       setPosts(prev => [res.data, ...prev]);
+      _cache = null;
       setRepostTarget(null);
       setRepostText("");
       toast.success("Repost edildi!");
