@@ -112,6 +112,18 @@ function monogram(name) {
   if (w.length === 1) return w[0].slice(0, 2).toUpperCase();
   return (w[0][0] + w[1][0]).toUpperCase();
 }
+// Generates a consistent hue-based bg color from org name string
+const LOGO_PALETTE = [
+  ["#1a3a5c","#3b82f6"], ["#1a3326","#22c55e"], ["#3b1a4d","#a855f7"],
+  ["#3d2400","#f59e0b"], ["#0a2e3d","#06b6d4"], ["#3d0a1a","#f43f5e"],
+  ["#1a2e1a","#4ade80"], ["#2e1a3d","#818cf8"], ["#3d2a0a","#fb923c"],
+  ["#0d2d2d","#2dd4bf"],
+];
+function orgColors(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return LOGO_PALETTE[h % LOGO_PALETTE.length];
+}
 function normTags(raw) {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw;
@@ -136,10 +148,17 @@ const FALLBACK = [
 ];
 
 // ─── Small sub-components ─────────────────────────────────────────────────────
-function OrgLogo({ org, category, size = 38, t }) {
-  const dot = CATS[category]?.dot || ACCENT;
+function OrgLogo({ org, logo_url, category, size = 38, t }) {
+  const [err, setErr] = useState(false);
+  const [bg, fg] = orgColors(org);
+  if (logo_url && !err) {
+    return (
+      <img src={logo_url} alt={org} onError={() => setErr(true)}
+        style={{ width:size, height:size, borderRadius:9, flexShrink:0, objectFit:"cover", border:"1px solid "+t.border }} />
+    );
+  }
   return (
-    <div style={{ width:size, height:size, borderRadius:9, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background: t.dark ? "rgba(255,255,255,0.04)" : "#f6f8fc", border:"1px solid "+t.border, color:dot, fontWeight:800, fontSize:size*0.36, fontFamily:"'Archivo',sans-serif", letterSpacing:"-0.01em" }}>
+    <div style={{ width:size, height:size, borderRadius:9, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:bg, border:"1px solid "+t.border, color:fg, fontWeight:800, fontSize:size*0.36, fontFamily:"'Archivo',sans-serif", letterSpacing:"-0.01em" }}>
       {monogram(org)}
     </div>
   );
@@ -211,7 +230,7 @@ function Card({ item, now, t, onOpen, index }) {
     <article onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} onClick={()=>onOpen(item)}
       style={{ background:t.card, border:"1px solid "+(hov?t.accent:t.border), borderRadius:16, padding:"18px 18px 16px", display:"flex", flexDirection:"column", gap:13, cursor:"pointer", position:"relative", transform:hov?"translateY(-2px)":"translateY(0)", boxShadow:hov?t.shadowHover:t.shadow, transition:"transform .18s ease, box-shadow .18s ease, border-color .18s ease", opacity:info.tone==="expired"?0.62:1, animation:"radarCardIn .4s ease both", animationDelay:(index*0.03)+"s" }}>
       <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-        <OrgLogo org={item.organizer} category={item.category} t={t} />
+        <OrgLogo org={item.organizer} logo_url={item.logo_url} category={item.category} t={t} />
         <div style={{ minWidth:0, flex:1 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8, justifyContent:"space-between" }}>
             <span style={{ fontSize:13, fontWeight:700, color:t.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.organizer}</span>
@@ -250,7 +269,7 @@ function FeaturedCard({ item, now, t, onOpen }) {
       style={{ flexShrink:0, width:360, scrollSnapAlign:"start", background:t.card, border:"1px solid "+(hov?t.accent:t.border), borderLeft:"3px solid "+t.accent, borderRadius:16, padding:"18px 20px", display:"flex", flexDirection:"column", gap:12, cursor:"pointer", transform:hov?"translateY(-2px)":"translateY(0)", boxShadow:hov?t.shadowHover:t.shadow, transition:"transform .18s ease, box-shadow .18s ease, border-color .18s ease" }}>
       <div style={{ display:"flex", gap:12, alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ display:"flex", gap:11, alignItems:"center", minWidth:0 }}>
-          <OrgLogo org={item.organizer} category={item.category} t={t} size={40} />
+          <OrgLogo org={item.organizer} logo_url={item.logo_url} category={item.category} t={t} size={40} />
           <div style={{ minWidth:0 }}>
             <div style={{ fontSize:13, fontWeight:700, color:t.text, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.organizer}</div>
             <div style={{ marginTop:3 }}><CatLabel category={item.category} t={t} /></div>
@@ -313,7 +332,7 @@ function Modal({ item, now, t, onClose }) {
           <IX size={17} sw={2.2} />
         </button>
         <div style={{ display:"flex", gap:13, alignItems:"center", paddingRight:40 }}>
-          <OrgLogo org={item.organizer} category={item.category} t={t} size={46} />
+          <OrgLogo org={item.organizer} logo_url={item.logo_url} category={item.category} t={t} size={46} />
           <div>
             <div style={{ fontSize:14, fontWeight:700, color:t.text }}>{item.organizer}</div>
             <div style={{ marginTop:4 }}><CatLabel category={item.category} t={t} /></div>
@@ -417,7 +436,9 @@ export default function Radar() {
   }, []);
 
   const filtered = useMemo(() => {
-    let list = data.slice();
+    // Deduplicate by id before any filtering
+    const seen = new Set();
+    let list = data.filter(o => { if (seen.has(o.id)) return false; seen.add(o.id); return true; });
     if (tab) list = list.filter((o) => o.category === tab);
     const q = query.trim().toLowerCase();
     if (q) list = list.filter((o) =>
@@ -503,13 +524,16 @@ export default function Radar() {
               options={[{v:"newest",l:"Ən yeni"},{v:"deadline",l:"Bitmə tarixi"},{v:"prize",l:"Mükafat"}]} />
           </div>
           {/* tabs */}
-          <div className="radar-no-scroll" style={{ display:"flex", gap:4, overflowX:"auto", marginTop:10 }}>
+          <div className="radar-no-scroll" style={{ display:"flex", gap:6, overflowX:"auto", marginTop:12, paddingBottom:12 }}>
             {TABS.map((tb) => {
               const active = tab === tb.key;
               return (
-                <button key={tb.label} onClick={()=>setTab(tb.key)} style={{ position:"relative", flexShrink:0, padding:"11px 14px 13px", background:"transparent", border:"none", cursor:"pointer", fontSize:14, fontWeight:active?800:600, color:active?t.text:t.textMuted, whiteSpace:"nowrap", letterSpacing:"-0.01em", transition:"color .15s ease", fontFamily:"'Archivo',sans-serif" }}>
+                <button key={tb.label} onClick={()=>setTab(tb.key)}
+                  style={{ flexShrink:0, padding:"7px 16px", borderRadius:20, cursor:"pointer", fontSize:13.5, fontWeight:active?800:600, whiteSpace:"nowrap", letterSpacing:"-0.01em", transition:"all .15s ease", fontFamily:"'Archivo',sans-serif", border: active ? "none" : "1px solid "+t.border, background: active ? t.accent : "transparent", color: active ? "#fff" : t.textMuted, boxShadow: active ? "0 4px 12px rgba(30,144,255,0.30)" : "none" }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = t.text; e.currentTarget.style.borderColor = t.accent; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = t.textMuted; e.currentTarget.style.borderColor = t.border; } }}
+                >
                   {tb.label}
-                  <span style={{ position:"absolute", left:6, right:6, bottom:-1, height:2.5, borderRadius:2, background:active?t.accent:"transparent", transition:"background .15s ease" }} />
                 </button>
               );
             })}
