@@ -6,7 +6,7 @@ import { useDarkMode } from "../hooks/useTheme";
 import {
   Edit3, Save, X, BookOpen, Award, GraduationCap, Sparkles, Plus, Trash2,
   ExternalLink, Camera, FolderGit2, Code2, Heart, ThumbsDown, MessageCircle,
-  FileText, Send, Mail, Globe, Settings, UserPlus, UserCheck,
+  FileText, Send, Mail, Globe, Settings, UserPlus, UserCheck, Download,
 } from "lucide-react";
 
 const GithubIcon = () => (
@@ -56,6 +56,7 @@ const TABS = [
   { key: "posts",    label: "Postlar",       icon: FileText },
   { key: "projects", label: "Layihələr",     icon: FolderGit2 },
   { key: "certs",    label: "Sertifikatlar", icon: Award },
+  { key: "cv",       label: "CV",            icon: Download,  ownOnly: true },
 ];
 
 function SectionHead({ C, icon: Icon, children, action }) {
@@ -552,7 +553,7 @@ export default function Profile() {
 
           {/* Tabs */}
           <div style={{ display: "flex", borderTop: `1px solid ${C.divider}` }}>
-            {TABS.map(({ key, label, icon: Icon }) => {
+            {TABS.filter(t => !t.ownOnly || isOwn).map(({ key, label, icon: Icon }) => {
               const count = key === "posts" ? userPosts.length : key === "projects" ? projects.length : key === "certs" ? certificates.length : null;
               const on = activeTab === key;
               return (
@@ -926,6 +927,40 @@ export default function Profile() {
               </div>
             ) : (
               <p style={{ fontSize: 13.5, color: C.muted, textAlign: "center", padding: "28px 0", margin: 0 }}>{isOwn ? "Hələ sertifikat əlavə olunmayıb" : "Sertifikat yoxdur"}</p>
+            )}
+          </div>
+        )}
+
+        {/* ── CV TAB ── */}
+        {!editing && activeTab === "cv" && isOwn && (
+          <div style={{ background: C.surface, border: C.border, borderRadius: 20, padding: isMobile ? "20px 16px" : "28px 28px", marginBottom: 14 }}>
+            <SectionHead C={C} icon={Download}>CV Şablonu seç</SectionHead>
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+              {[
+                { key: "creative",  label: "Kreativ",    sub: "Startup / Founder",    emoji: "🚀", desc: "Vertikal timeline, hero header, dark mode" },
+                { key: "tech",      label: "Tech",       sub: "Mühəndis / Developer", emoji: "⚡", desc: "Layihə fokuslu, badge-lər, skill grid" },
+                { key: "corporate", label: "Korporativ", sub: "ATS-Friendly",          emoji: "📄", desc: "Minimal, standart, ATS sistemi üçün" },
+              ].map(tpl => (
+                <a key={tpl.key} href={`/cv?t=${tpl.key}`} style={{ display: "block", textDecoration: "none", padding: "16px 18px", borderRadius: 14, border: `1px solid ${C.borderColor}`, background: C.bg, cursor: "pointer", transition: "border-color .15s, box-shadow .15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.boxShadow = "0 4px 16px rgba(30,144,255,0.12)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.borderColor; e.currentTarget.style.boxShadow = "none"; }}>
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>{tpl.emoji}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.text, fontFamily: "'Archivo', sans-serif" }}>{tpl.label}</div>
+                  <div style={{ fontSize: 11.5, fontWeight: 600, color: ACCENT, marginTop: 2, fontFamily: "'JetBrains Mono', monospace" }}>{tpl.sub}</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 6, lineHeight: 1.5 }}>{tpl.desc}</div>
+                </a>
+              ))}
+            </div>
+            {user?.username && (
+              <div style={{ padding: "12px 16px", borderRadius: 12, background: C.accentWash, border: `1px solid rgba(30,144,255,0.2)`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Public CV linki</div>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 2, fontFamily: "'JetBrains Mono', monospace" }}>hashcampus.site/u/{user.username}</div>
+                </div>
+                <a href={`/u/${user.username}`} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, background: ACCENT, color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: "'Archivo', sans-serif" }}>
+                  <ExternalLink size={13} /> Bax
+                </a>
+              </div>
             )}
           </div>
         )}

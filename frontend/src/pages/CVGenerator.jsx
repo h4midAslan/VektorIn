@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api/client";
 
 const ACCENT = "#1E90FF";
@@ -431,7 +431,9 @@ function TemplateSwitcher({ active, onChange }) {
 
 // ── CVPreviewContainer ────────────────────────────────────────────────────────
 function CVPreviewContainer({ profileData }) {
-  const [activeTemplate, setActiveTemplate] = useState("creative");
+  const [searchParams] = useSearchParams();
+  const initial = ["tech", "corporate", "creative"].includes(searchParams.get("t")) ? searchParams.get("t") : "creative";
+  const [activeTemplate, setActiveTemplate] = useState(initial);
   return (
     <div style={{ maxWidth: 1040, margin: "0 auto" }}>
       <div className="cv-no-print"><TemplateSwitcher active={activeTemplate} onChange={setActiveTemplate} /></div>
